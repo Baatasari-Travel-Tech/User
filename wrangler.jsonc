@@ -1,0 +1,46 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "user",
+  "main": ".open-next/worker.js",
+
+  // Pin this. The Workers runtime is versioned by date, and leaving it floating
+  // means a deploy months from now can behave differently to one today.
+  "compatibility_date": "2026-08-12",
+
+  // Required by the adapter: Next's server code uses Node APIs (Buffer, streams,
+  // async_hooks) that the bare Workers runtime does not provide.
+  "compatibility_flags": ["nodejs_compat"],
+
+  // public/ plus the build output. `assets` serves these directly from
+  // Cloudflare's edge without waking the Worker, which is what keeps static
+  // files cheap and fast.
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  "observability": {
+    "enabled": true
+  },
+
+  // Where the ISR cache lives — see open-next/s3-incremental-cache.ts.
+  //
+  // Only the non-secret half is here. The two AWS keys are Worker *secrets* and
+  // must never appear in this file, which is committed:
+  //
+  //   NEXT_INC_CACHE_S3_ACCESS_KEY_ID
+  //   NEXT_INC_CACHE_S3_SECRET_ACCESS_KEY
+  //
+  // Set those in the dashboard, or with `wrangler secret put <name>`.
+  //
+  // They must be SECRETS, not plain-text variables. `wrangler deploy` defaults
+  // to keep_vars=false: it deletes every var and re-sets only what this block
+  // lists. A key added as a plain variable therefore survives until the next
+  // push to main and then vanishes, taking the cache with it. Secrets are
+  // never touched by a deployment.
+  "vars": {
+    "NEXT_INC_CACHE_S3_BUCKET": "baatasari-frontend-cache",
+    "NEXT_INC_CACHE_S3_REGION": "ap-south-2",
+    "NEXT_INC_CACHE_S3_PREFIX": "incremental-cache"
+  }
+}

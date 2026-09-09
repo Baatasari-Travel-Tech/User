@@ -1,0 +1,48 @@
+# pnpm settings for this package.
+#
+# pnpm 10+ refuses to run dependency install scripts unless they are explicitly
+# allowlisted here — a supply-chain guard, since a postinstall script is the
+# usual payload of a compromised package. npm ran all of them unconditionally,
+# so this list is the migration's one behavioural difference worth knowing.
+#
+# Allowed (each fetches a platform-native binary that the build genuinely needs):
+#   sharp          — Next.js uses it for image optimisation at build and runtime.
+#   unrs-resolver  — native module resolver behind eslint-config-next's import
+#                    plugin; `pnpm lint` fails to load without it.
+#   esbuild        — the bundler @opennextjs/cloudflare runs over the built
+#                    output; without its binary the Cloudflare build cannot run.
+#   workerd        — Cloudflare's runtime, used by `wrangler dev` to preview the
+#                    Worker locally before anything is deployed.
+#
+# Denied deliberately (left false rather than removed, so a future `pnpm install`
+# doesn't re-prompt and someone doesn't "fix" it by blanket-allowing):
+#   core-js — its postinstall only prints a funding/ad banner. No build output.
+#   msw     — its postinstall copies a mock service worker into public/. This
+#             app doesn't use MSW at runtime (it arrives transitively), and
+#             letting it write into public/ is an unwanted side effect.
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
+  core-js: false
+  msw: false
+  esbuild: true
+  workerd: true
+
+# Transitive version pins for security advisories.
+#
+# These were npm-style `overrides` in package.json. pnpm does NOT read that
+# field — it uses its own `overrides` with `parent>child` syntax — so they
+# silently stopped applying when this package moved to pnpm. The lockfile gains
+# an `overrides:` section when they are live; if that section is missing after
+# an install, they are being ignored again.
+#
+# `next` itself is a DIRECT dependency, so its advisories (App Router middleware
+# bypass, SSRF in Server Actions and in rewrites, App Router DoS — all fixed in
+# 16.2.11) are handled by bumping the dependency rather than pinning it here.
+overrides:
+  # Arbitrary file read + path traversal in the previous-source-map handler.
+  postcss: ">=8.5.18"
+  # Non-secure and custom generators can loop indefinitely.
+  nanoid: ">=3.3.17"
+  # Inherited libvips vulnerabilities; arrives transitively through next.
+  sharp: ">=0.35.0"

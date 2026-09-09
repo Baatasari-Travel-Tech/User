@@ -1,0 +1,727 @@
+@import "tailwindcss";
+
+/* =========================
+   1) Semantic UI tokens
+   ========================= */
+:root {
+  --background: #f5efe4;
+  --foreground: #0c1D37;
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+
+  --radius: 0.625rem;
+
+  /* =========================
+     2) Charts
+     ========================= */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  /* =========================
+     3) Sidebar tokens
+     ========================= */
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* =========================
+     4) Brand tokens
+     ========================= */
+  --brand-navy: #0c1D37;
+  --brand-navy-hover: rgba(12, 27, 51, 0.9);
+  --brand-blue: #2b4570;
+  --royal-blue: #1f4fd8;
+
+  /* Warm cream surface for the top nav, plus the gold accent palette (NewDesign theme) */
+  --nav: #faf9f6;
+  --gold: #c2962e;
+  --gold-text: #8a7136;
+  --gold-icon: #a98b4f;
+  --gold-bar-bg: #faf6ec;
+  --gold-bar-border: #e7ddc9;
+  --gold-soft-bg: #f0e8d8;
+  --gold-soft-border: #e3d9c4;
+
+  /* =========================
+     5) Foundation palette
+     ========================= */
+  --white: #ffffff;
+  --black: #000000;
+
+  /* Gray */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
+  /* Zinc */
+  --zinc-50: #fafafa;
+  --zinc-400: #a1a1aa;
+  --zinc-950: #09090b;
+
+  /* Slate */
+  --slate-200: #e2e8f0;
+  --slate-700: #334155;
+
+  /* Blue */
+  --blue-50: #eff6ff;
+  --blue-100: #dbeafe;
+  --blue-200: #bfdbfe;
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;
+  --blue-900: #1e3a8a;
+
+  /* Project-specific singletons */
+  --revenue-color: #2563eb;
+  --blue-soft: #3a5f94;
+  --blue-soft-light: #6383b1;
+
+  /* Navy */
+  --navy-800: #1a2e4a;
+  --navy-900: #0c1d37;
+
+  /* Green */
+  --green-100: #dcfce7;
+  --green-700: #15803d;
+
+  /* Orange */
+  --orange-100: #ffedd5;
+  --orange-700: #c2410c;
+
+  /* Purple */
+  --purple-soft-bg: #eee9ff;
+  --purple-soft-text: #6b5ce7;
+
+  /* =========================
+     6) Feature tokens: Events
+     ========================= */
+  --events-white: var(--white);
+
+  --events-gray-50: var(--gray-50);
+  --events-gray-100: var(--gray-100);
+  --events-gray-200: var(--gray-200);
+  --events-gray-300: var(--gray-300);
+  --events-gray-400: var(--gray-400);
+  --events-gray-500: var(--gray-500);
+  --events-gray-700: var(--gray-700);
+
+  --events-blue-600: #2563eb;
+  --events-green-600: #16a34a;
+
+  /* =========================
+     7) Feature tokens: Upcoming
+     ========================= */
+  --upcoming-white: var(--white);
+
+  --upcoming-primary-900: #0c1d37;
+  --upcoming-primary-800: #203d69;
+  --upcoming-primary-700: #284878;
+
+  --upcoming-blue-600: #2563eb;
+
+  --upcoming-gray-700: var(--gray-700);
+  --upcoming-gray-600: var(--gray-600);
+  --upcoming-gray-500: var(--gray-500);
+  --upcoming-gray-200: var(--gray-200);
+
+  /* =========================
+     8) Feature tokens: Artists
+     ========================= */
+  --artist-card-bg: #ffffff;
+  --artist-card-border: #f3f4f6;
+
+  /* =========================
+     9) Feature tokens: Stalls
+     ========================= */
+  --stall-card-bg: #ffffff;
+  --stall-card-border: #f3f4f6;
+
+  --stall-subtitle-color: #6b7280;
+  --stall-category-color: #64748b;
+
+  --stall-details-border: #274e7d;
+  --stall-details-bg: #f4f4f5;
+  --stall-header-bg: #ffffff;
+  --stall-divider: #e5e7eb;
+
+  --stall-close-icon: #9ca3af;
+
+  --stall-item-border: #274e7d;
+  --stall-item-text: #274e7d;
+  --stall-price-color: #000000;
+
+  /* =========================
+     Artist Brand Extensions
+     ========================= */
+
+  --brand-deep-blue: #122848;
+
+
+  /* Artist Feature Alignment */
+  --artist-card-bg: var(--card);
+  --artist-card-border: var(--border);
+
+  /* =========================
+   Category Filter Tokens
+   ========================= */
+
+  --glass-bg: color-mix(in srgb, var(--white) 70%, transparent);
+  --glass-border: color-mix(in srgb, var(--white) 40%, transparent);
+  --glass-soft-bg: color-mix(in srgb, var(--white) 50%, transparent);
+
+  --category-divider: color-mix(in srgb, var(--gray-200) 50%, transparent);
+
+  --category-active-bg: var(--brand-deep-blue);
+  --category-active-shadow: color-mix(in srgb, var(--brand-deep-blue) 20%, transparent);
+
+  --category-inactive-text: var(--gray-600);
+  --category-hover-text: var(--black);
+  --category-hover-bg: color-mix(in srgb, var(--white) 80%, transparent);
+
+  --live-dot-soft: var(--green-100);
+  --live-dot-solid: var(--green-700);
+  --location-text: var(--brand-deep-blue);
+
+  /* =========================
+     10) Feature tokens: Hero
+     ========================= */
+  --hero-bg: transparent;
+  --hero-container-border: #e2e8f0;
+  --hero-container-gradient: linear-gradient(180deg,
+      #e8f0f8 0%,
+      #f8fafc 100%);
+  --hero-container-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+
+  --hero-divider: #e2e8f0;
+
+  --hero-button-bg: #0c1D37;
+  --hero-button-text: #ffffff;
+  --hero-button-hover: #1a2e4a;
+  --hero-button-hover-shadow: 0 10px 20px rgba(12, 29, 55, 0.2);
+
+  --hero-blob-1: rgba(186, 215, 255, 0.4);
+  --hero-blob-2: rgba(219, 234, 254, 0.3);
+
+  --hero-badge-bg: #ffffff;
+  --hero-badge-border: #f1f5f9;
+  --hero-badge-icon: #64748b;
+  --hero-badge-text: #64748b;
+
+  --hero-title: #0c1D37;
+  --hero-title-highlight: #1e40af;
+
+  --hero-description: #475569;
+
+  --hero-search-bg: #ffffff;
+  --hero-search-border: #f1f5f9;
+  --hero-search-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.08);
+  --hero-search-hover-bg: #fafafa;
+
+  --hero-label-where: #94a3b8;
+  --hero-label-activity: #94a3b8;
+  --hero-label-budget: #94a3b8;
+
+  --hero-input-text: #1e2937;
+  --hero-placeholder: #cbd5e1;
+
+  --bg-muted-strong: transparent;
+
+  /* =========================
+     11) Movie Card Tokens
+     ========================= */
+
+  --movie-card-bg: var(--card);
+  --movie-card-border: var(--border);
+
+  --movie-card-shadow: 0 1px 2px color-mix(in srgb, var(--black) 6%, transparent);
+
+  /* =========================
+     12) Feature tokens: Talent
+     ========================= */
+  --talent-page-bg: var(--background);
+  --talent-page-grid: color-mix(in srgb, var(--blue-100) 25%, transparent);
+  --talent-section-border: color-mix(in srgb, var(--slate-200) 70%, transparent);
+
+  --talent-surface: var(--white);
+  --talent-surface-soft: color-mix(in srgb, var(--white) 92%, var(--blue-50));
+
+  --talent-title: var(--brand-blue);
+  --talent-body: var(--gray-600);
+  --talent-muted: var(--gray-500);
+  --talent-highlight-start: var(--blue-500);
+
+  --talent-pill-bg: var(--white);
+  --talent-pill-border: color-mix(in srgb, var(--slate-200) 85%, transparent);
+  --talent-pill-text: color-mix(in srgb, var(--blue-soft-light) 90%, var(--gray-400));
+
+  --talent-card-bg: var(--white);
+  --talent-card-bg-accent: color-mix(in srgb, var(--green-100) 20%, var(--white));
+  --talent-card-border: color-mix(in srgb, var(--slate-200) 75%, transparent);
+  --talent-card-border-accent: color-mix(in srgb, var(--green-100) 65%, var(--blue-100));
+  --talent-card-title: var(--gray-900);
+  --talent-card-text: var(--talent-muted);
+  --talent-card-icon-bg: color-mix(in srgb, var(--blue-50) 75%, var(--white));
+  --talent-card-icon-fg: var(--royal-blue);
+  --talent-card-icon-success-bg: color-mix(in srgb, var(--green-100) 45%, var(--white));
+  --talent-card-icon-success-fg: var(--green-700);
+
+  --talent-primary-btn-shadow: 0 14px 32px color-mix(in srgb, var(--brand-navy) 18%, transparent);
+
+  --talent-form-shell-bg: var(--white);
+  --talent-form-shell-border: color-mix(in srgb, var(--slate-200) 70%, transparent);
+  --talent-form-shell-top: var(--blue-600);
+  --talent-form-shadow: 0 34px 90px color-mix(in srgb, var(--brand-navy) 10%, transparent);
+
+  --talent-section-title: var(--gray-900);
+  --talent-section-subtitle: var(--gray-600);
+  --talent-section-kicker: var(--gray-400);
+
+  --talent-input-bg: color-mix(in srgb, var(--white) 94%, var(--gray-100));
+  --talent-input-border: color-mix(in srgb, var(--slate-200) 85%, transparent);
+  --talent-input-text: var(--gray-700);
+  --talent-input-placeholder: var(--gray-400);
+  --talent-input-icon: var(--gray-400);
+
+  --talent-chip-bg: var(--white);
+  --talent-chip-border: color-mix(in srgb, var(--slate-200) 85%, transparent);
+  --talent-chip-text: var(--gray-600);
+  --talent-chip-active-bg: color-mix(in srgb, var(--blue-50) 85%, var(--white));
+  --talent-chip-active-border: color-mix(in srgb, var(--blue-200) 80%, var(--blue-100));
+  --talent-chip-active-text: var(--royal-blue);
+
+  --talent-callout-bg: color-mix(in srgb, var(--blue-50) 36%, var(--white));
+  --talent-callout-border: color-mix(in srgb, var(--slate-200) 75%, transparent);
+  --talent-callout-text: var(--gray-600);
+  --talent-callout-star: #f4b400;
+
+  --talent-footer-text: var(--gray-500);
+  --talent-footer-strong: var(--brand-blue);
+}
+
+
+
+@layer components {
+  .movie-card {
+    background-color: var(--movie-card-bg);
+    border: 1px solid var(--movie-card-border);
+    box-shadow: var(--movie-card-shadow);
+    transition: all 0.3s ease;
+  }
+}
+
+/* =========================
+   Tailwind v4 theme mapping
+   =========================
+   Keep :root/.dark OUTSIDE @layer base per shadcn Tailwind v4 guidance. [web:62]
+*/
+@theme inline {
+  --font-sans: var(--font-albert), "Albert Sans", system-ui, sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-nav: var(--nav);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-brand-900: var(--brand-navy);
+  --color-brand-800: var(--navy-800);
+  --color-brand-700: var(--blue-soft);
+
+  --color-blue-soft: var(--blue-soft);
+  --color-blue-soft-light: var(--blue-soft-light);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+}
+
+/* =========================
+   Base layer
+   ========================= */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html,
+  body {
+    width: 100%;
+    position: relative;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-albert), system-ui, sans-serif;
+  }
+
+  h1 {
+    font-family: var(--font-bricolage), system-ui, sans-serif;
+  }
+
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-albert), system-ui, sans-serif;
+  }
+}
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--slate-700) 35%, transparent) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: color-mix(in srgb, var(--slate-700) 35%, transparent);
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in srgb, var(--slate-700) 55%, transparent);
+  }
+}
+
+/* =========================
+   Components layer
+   ========================= */
+@layer components {
+
+  /* Buttons */
+  .btn-base-lg {
+    @apply h-10 sm:h-12 px-4 sm:px-6 rounded-full font-medium text-sm transition-colors;
+  }
+
+  .btn-primary {
+    @apply h-10 sm:h-12 px-4 sm:px-6 rounded-full font-medium text-sm transition-all shadow-md active:scale-95;
+    background-color: var(--brand-navy);
+    color: var(--white);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--brand-navy-hover);
+  }
+
+  .btn-outline-red {
+    @apply h-10 sm:h-12 px-4 sm:px-6 rounded-full font-medium text-sm transition-colors border-2 border-red-500 text-red-600 bg-white hover:bg-red-50;
+  }
+
+  .btn-outline-gray {
+    @apply h-10 sm:h-12 px-4 sm:px-6 rounded-full font-medium text-sm transition-colors border-2 border-gray-800 text-gray-900 bg-white hover:bg-gray-50;
+  }
+
+  .btn-pill-sm {
+    @apply h-8 px-4 rounded-full transition-colors;
+  }
+
+  .btn-pill-active {
+    background-color: var(--brand-navy);
+    color: var(--white);
+  }
+
+  .btn-pill-active:hover {
+    background-color: var(--brand-navy-hover);
+  }
+
+  .btn-pill-inactive {
+    @apply bg-gray-100 text-gray-700 border-transparent hover:bg-gray-200;
+  }
+
+  /* Stat / text helpers */
+  .card-stat {
+    @apply border border-gray-200;
+  }
+
+  .text-stat-label {
+    @apply text-sm text-gray-700 mb-1;
+  }
+
+  .text-stat-value {
+    @apply text-3xl font-bold text-gray-900;
+  }
+
+  .text-section-title {
+    @apply text-base font-semibold mb-2;
+    color: var(--blue-900);
+  }
+
+  /* =========================
+     Hero Section Utilities
+     ========================= */
+
+  .hero-section {
+    background-color: var(--hero-bg);
+  }
+
+  .hero-container {
+    border: 1px solid var(--hero-container-border);
+    background: var(--hero-container-gradient);
+    box-shadow: var(--hero-container-shadow);
+  }
+
+  .hero-input-group {
+    border-right: 1px solid var(--hero-divider);
+  }
+
+  .hero-button:hover {
+    background-color: var(--hero-button-hover);
+    box-shadow: var(--hero-button-hover-shadow);
+  }
+
+  .hero-blob-1 {
+    background-color: var(--hero-blob-1);
+  }
+
+  .hero-blob-2 {
+    background-color: var(--hero-blob-2);
+  }
+
+  .hero-badge {
+    background-color: var(--hero-badge-bg);
+    border: 1px solid var(--hero-badge-border);
+  }
+
+  .hero-badge-icon {
+    color: var(--hero-badge-icon);
+  }
+
+  .hero-badge-text {
+    color: var(--hero-badge-text);
+  }
+
+  .hero-title {
+    color: var(--hero-title);
+  }
+
+  .hero-title-highlight {
+    color: var(--hero-title-highlight);
+  }
+
+  .hero-description {
+    color: var(--hero-description);
+  }
+
+  .hero-search {
+    background-color: var(--hero-search-bg);
+    border: 1px solid var(--hero-search-border);
+    box-shadow: var(--hero-search-shadow);
+  }
+
+  .hero-input-group:hover {
+    background-color: var(--hero-search-hover-bg);
+  }
+
+  .hero-label-where {
+    color: var(--hero-label-where);
+  }
+
+  .hero-label-activity {
+    color: var(--hero-label-activity);
+  }
+
+  .hero-label-budget {
+    color: var(--hero-label-budget);
+  }
+
+  .hero-input-text {
+    color: var(--hero-input-text);
+  }
+
+  .hero-input-text::placeholder {
+    color: var(--hero-placeholder);
+    opacity: 1;
+  }
+
+  .hero-button {
+    background-color: var(--hero-button-bg);
+    color: var(--hero-button-text);
+  }
+}
+
+/* =========================
+   Utility classes (not components)
+   ========================= */
+/* .font-inter removed along with the Inter family — the class had no users
+   and the var it pointed at was never defined by anything else. */
+.font-albert {
+  font-family: var(--font-albert), system-ui, sans-serif;
+}
+
+.font-poppins {
+  font-family: var(--font-poppins), system-ui, sans-serif;
+}
+
+.font-bricolage {
+  font-family: var(--font-bricolage), system-ui, sans-serif;
+}
+
+.page-x {
+  @apply mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10;
+}
+
+/* Wider variant used by the marketing/content pages (Home, Events) — kept
+   distinct from .page-x (used by app/dashboard-style pages) rather than
+   widening .page-x itself, since that would also widen every dashboard page. */
+.page-x-wide {
+  @apply mx-auto w-full max-w-[1680px] px-4 sm:px-6 lg:px-10;
+}
+
+/* Animations */
+@keyframes tooltipFade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-tooltip-fade {
+  animation: tooltipFade 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Analytics chart helpers */
+.analytics-header {
+  @apply flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4;
+}
+
+.analytics-title {
+  @apply text-xl font-bold text-[#284878];
+}
+
+.analytics-controls {
+  @apply flex flex-wrap items-center gap-2 text-[#3a5f94];
+}
+
+.btn-dropdown-trigger {
+  @apply h-8 px-4 rounded-full transition-colors border-transparent bg-gray-100 text-gray-700 capitalize hover:bg-gray-200 hover:text-gray-900;
+}
+
+.dropdown-item-custom {
+  @apply capitalize text-gray-900 focus:text-gray-900 focus:bg-gray-200 cursor-pointer;
+}
+
+.chart-wrapper {
+  @apply overflow-x-auto overflow-y-visible pb-4;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.chart-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.chart-area {
+  @apply h-80 min-w-150 lg:min-w-0 w-full lg:w-auto;
+}
+
+.chart-tooltip {
+  @apply bg-white rounded-xl px-4 py-3 shadow-lg border border-gray-200;
+  will-change: transform, opacity;
+  animation: tooltipFade 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chart-tooltip-label {
+  @apply text-xs mb-1;
+  color: var(--brand-navy);
+}
+
+.chart-tooltip-value {
+  @apply text-lg font-bold text-gray-900;
+}
