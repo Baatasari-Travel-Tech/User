@@ -1,4 +1,12 @@
-# Baatasari (Frontend)
+# Baatasari — User
+
+The ticket-buyer frontend. Public face: **`baatasari.com`**. Repo `User`,
+Cloudflare Worker `user`, local path `D:\Baatasari\User`.
+
+> One of three frontends against the shared backend at `api.baatasari.com`
+> (`User` / `Organizer` / `Venue`). Architecture + the per-surface auth plan:
+> `D:\Baatasari\THREE-FRONTENDS.md`. The organizer surface (`/organizer/*`) moves
+> out to its own repo in a later pass — see `D:\Baatasari\SPLIT-ORGANIZER-FRONTEND.md`.
 
 #### **Discover, connect, experience.**
 Baatasari is a location-first platform to book the best events and experiences near you - built for explorers, organizers, and performers.
