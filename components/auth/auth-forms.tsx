@@ -1,129 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/app/providers'
 import { resolveUserHome } from '@/lib/auth/navigation'
 import { useAuthStore } from '@/lib/auth/store'
 import { useAuthModal } from './auth-modal-context'
 import InlineSpinner from '@/components/ui/inline-spinner'
-import { ArrowRight, CalendarPlus, Eye, EyeOff } from 'lucide-react'
+import { CalendarPlus, Eye, EyeOff } from 'lucide-react'
 import { logAuth, logAuthError } from '@/lib/auth-log'
-import { ApiError, type Surface } from '@/types/api'
+import { ApiError } from '@/types/api'
 import { supportMailto } from '@/lib/support-mailto'
-
-/**
- * The per-surface "Continue as …" chooser (THREE-FRONTENDS.md §3.6/§3.7).
- *
- * Ported from the venue frontend's login-register.tsx — the first build of
- * this mechanism, since this frontend's own login/register was deliberately
- * left byte-identical in Session 1. Same mechanism (GET /auth/sessions on
- * mount, POST /auth/adopt on choosing one), restyled to this app's own
- * slate/brand-900 tokens rather than Venue's gold/cream. No account-type
- * toggle: role here is still fixed by the entry point (organizer CTAs pass
- * ?role=organizer), same as before this change.
- */
-type DuplicateMatch = { surface: Surface; email: string } | 'no-session'
-
-const SURFACE_LABEL: Record<Surface, string> = {
-  user: 'Baatasari',
-  organizer: 'Baatasari for Organizers',
-  venue: 'Baatasari for Venues',
-}
-
-function SessionChooser({
-  sessions,
-  adoptingSurface,
-  onAdopt,
-  onUseDifferentAccount,
-}: {
-  sessions: Array<{ surface: Surface; email: string }>
-  adoptingSurface: Surface | null
-  onAdopt: (surface: Surface) => void
-  onUseDifferentAccount: () => void
-}) {
-  return (
-    <div className="space-y-2.5">
-      {sessions.map(({ surface, email }) => (
-        <button
-          key={surface}
-          type="button"
-          onClick={() => onAdopt(surface)}
-          disabled={adoptingSurface !== null}
-          className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left shadow-sm transition hover:bg-slate-50 disabled:opacity-60"
-        >
-          <span className="min-w-0">
-            <span className="block truncate text-sm font-semibold text-slate-900">Continue as {email}</span>
-            <span className="block text-xs text-slate-500">Signed in on {SURFACE_LABEL[surface]}</span>
-          </span>
-          {adoptingSurface === surface ? (
-            <InlineSpinner />
-          ) : (
-            <ArrowRight className="h-4 w-4 shrink-0 text-slate-400" />
-          )}
-        </button>
-      ))}
-
-      <button
-        type="button"
-        onClick={onUseDifferentAccount}
-        className="w-full py-2 text-center text-xs font-semibold text-brand-800 hover:underline"
-      >
-        Use a different account
-      </button>
-    </div>
-  )
-}
-
-function DuplicateNotice({
-  email,
-  duplicate,
-  adopting,
-  onAdopt,
-  onSwitchToLogin,
-}: {
-  email: string
-  duplicate: DuplicateMatch
-  adopting: boolean
-  onAdopt: (surface: Surface) => void
-  onSwitchToLogin: () => void
-}) {
-  return (
-    <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-      <p className="font-semibold text-slate-900">That&apos;s already an account</p>
-
-      {duplicate === 'no-session' ? (
-        <>
-          <p className="mt-1.5">{email} already has a Baatasari account. Sign in with its password to continue.</p>
-          <button
-            type="button"
-            onClick={onSwitchToLogin}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
-          >
-            Sign in instead
-            <ArrowRight className="h-4 w-4" />
-          </button>
-        </>
-      ) : (
-        <>
-          <p className="mt-1.5">
-            You&apos;re already signed in as {duplicate.email} on {SURFACE_LABEL[duplicate.surface]}.
-          </p>
-          <button
-            type="button"
-            onClick={() => onAdopt(duplicate.surface)}
-            disabled={adopting}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800 disabled:opacity-60"
-          >
-            {adopting && <InlineSpinner />}
-            {adopting ? 'Continuing…' : `Continue as ${duplicate.email}`}
-            {!adopting && <ArrowRight className="h-4 w-4" />}
-          </button>
-        </>
-      )}
-    </div>
-  )
-}
 
 const PENDING_DELETION_CODE = 'ACCOUNT_PENDING_DELETION'
 // Same code, lowercased — matches what the OAuth callback redirects with.
@@ -205,7 +92,7 @@ const resolveGoogleOAuthRedirectUrl = (role: 'USER' | 'ORGANIZER', redirectPath:
 export function LoginForm({ onSwitchMode }: AuthSwitch) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login, verifyTwoFactor, requestTwoFactorRecovery, confirmTwoFactorRecovery, fetchSessions, adopt } = useAuth()
+  const { login, verifyTwoFactor, requestTwoFactorRecovery, confirmTwoFactorRecovery } = useAuth()
   const { closeModal, setIsAuthenticating } = useAuthModal()
 
   // A Google sign-in that hit a 2FA-enabled account arrives here via
@@ -225,35 +112,6 @@ export function LoginForm({ onSwitchMode }: AuthSwitch) {
   const [pendingDeletion, setPendingDeletion] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-
-  // The "Continue as …" chooser (THREE-FRONTENDS.md §3.6/§3.7). Fetched
-  // once, unconditionally — the chooser needs it before any credentials are
-  // typed, so there's no later moment to fetch it lazily.
-  const [sessionsChecked, setSessionsChecked] = useState(false)
-  const [sessions, setSessions] = useState<Array<{ surface: Surface; email: string }>>([])
-  const [useDifferentAccount, setUseDifferentAccount] = useState(false)
-  const [adoptingSurface, setAdoptingSurface] = useState<Surface | null>(null)
-
-  useEffect(() => {
-    let active = true
-    fetchSessions()
-      .then((list) => {
-        if (active) setSessions(list)
-      })
-      .catch(() => {
-        if (active) setSessions([])
-      })
-      .finally(() => {
-        if (active) setSessionsChecked(true)
-      })
-    return () => {
-      active = false
-    }
-    // Runs once on mount, deliberately — fetchSessions comes from useAuth()
-    // and isn't memoized there, so listing it would refetch on every
-    // AuthProvider re-render for no reason.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const authErrorFromUrl = searchParams.get('authError')
   const authErrorDescription = searchParams.get('authErrorDescription') ?? ''
@@ -277,24 +135,6 @@ export function LoginForm({ onSwitchMode }: AuthSwitch) {
   const completeLogin = () => {
     closeModal()
     router.replace(resolveAuthDestination(searchParams))
-  }
-
-  const showLoginChooser = sessionsChecked && sessions.length > 0 && !useDifferentAccount
-
-  const handleAdopt = async (surface: Surface) => {
-    setError(null)
-    setAdoptingSurface(surface)
-    setIsAuthenticating(true)
-    try {
-      await adopt(surface)
-      completeLogin()
-    } catch (authError) {
-      const message = authError instanceof Error ? authError.message : 'Could not continue with that account. Try signing in instead.'
-      setError(message)
-    } finally {
-      setAdoptingSurface(null)
-      setIsAuthenticating(false)
-    }
   }
 
   const handleLogin = async () => {
@@ -533,101 +373,81 @@ export function LoginForm({ onSwitchMode }: AuthSwitch) {
         <h2 className="text-2xl font-semibold text-slate-900">Login to Baatasari</h2>
       </div>
 
-      {!sessionsChecked ? (
-        // Briefly, until GET /auth/sessions resolves — avoids flashing the
-        // plain form for accounts that are about to get the chooser instead.
-        <p className="py-6 text-center text-sm text-slate-500">Checking for an existing session…</p>
-      ) : showLoginChooser ? (
-        <>
-          <SessionChooser
-            sessions={sessions}
-            adoptingSurface={adoptingSurface}
-            onAdopt={(surface) => void handleAdopt(surface)}
-            onUseDifferentAccount={() => setUseDifferentAccount(true)}
+      <div className="space-y-4">
+        <label className="block text-sm font-semibold text-slate-700">
+          Email
+          <input
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-brand-900 focus:outline-none focus:ring-4 focus:ring-brand-900/10"
+            type="email"
+            placeholder="contactus@baatasari.com"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
           />
-          {error && (
-            <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-600">{error}</p>
-          )}
-        </>
-      ) : (
-        <>
-          <div className="space-y-4">
-            <label className="block text-sm font-semibold text-slate-700">
-              Email
-              <input
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-brand-900 focus:outline-none focus:ring-4 focus:ring-brand-900/10"
-                type="email"
-                placeholder="contactus@baatasari.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-              />
-            </label>
-            <label className="block text-sm font-semibold text-slate-700">
-              Password
-              <div className="relative mt-2">
-                <input
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 pr-11 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-brand-900 focus:outline-none focus:ring-4 focus:ring-brand-900/10"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="********"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && void handleLogin()}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-700"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                </button>
-              </div>
-            </label>
-          </div>
-
-          <div className="flex justify-end">
-            <a href="/forgot-password" className="text-xs font-semibold text-brand-800 hover:underline">
-              Forgot password?
-            </a>
-          </div>
-
-          {errorToShow && (
-            showPendingDeletionBanner ? (
-              <PendingDeletionBanner message={errorToShow} />
-            ) : (
-              <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-600">
-                {errorToShow}
-              </p>
-            )
-          )}
-
-          <div className="space-y-4">
+        </label>
+        <label className="block text-sm font-semibold text-slate-700">
+          Password
+          <div className="relative mt-2">
+            <input
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 pr-11 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-brand-900 focus:outline-none focus:ring-4 focus:ring-brand-900/10"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="********"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && void handleLogin()}
+            />
             <button
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 disabled:opacity-60"
-              onClick={() => void handleLogin()}
-              disabled={loading || !email || !password}
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-700"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
-              {loading && <InlineSpinner />}
-              <span>{loading ? 'Signing in...' : 'Login'}</span>
-            </button>
-
-            <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400">
-              <span className="h-px flex-1 bg-slate-200" />
-              or
-              <span className="h-px flex-1 bg-slate-200" />
-            </div>
-
-            <button
-              className="flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
-              onClick={() => void handleGoogle()}
-              disabled={loading || googleLoading}
-            >
-              {googleLoading ? <InlineSpinner /> : <GoogleIcon />}
-              {googleLoading ? 'Opening Google...' : 'Continue with Google'}
+              {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
             </button>
           </div>
-        </>
+        </label>
+      </div>
+
+      <div className="flex justify-end">
+        <a href="/forgot-password" className="text-xs font-semibold text-brand-800 hover:underline">
+          Forgot password?
+        </a>
+      </div>
+
+      {errorToShow && (
+        showPendingDeletionBanner ? (
+          <PendingDeletionBanner message={errorToShow} />
+        ) : (
+          <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-600">
+            {errorToShow}
+          </p>
+        )
       )}
+
+      <div className="space-y-4">
+        <button
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 disabled:opacity-60"
+          onClick={() => void handleLogin()}
+          disabled={loading || !email || !password}
+        >
+          {loading && <InlineSpinner />}
+          <span>{loading ? 'Signing in...' : 'Login'}</span>
+        </button>
+
+        <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400">
+          <span className="h-px flex-1 bg-slate-200" />
+          or
+          <span className="h-px flex-1 bg-slate-200" />
+        </div>
+
+        <button
+          className="flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+          onClick={() => void handleGoogle()}
+          disabled={loading || googleLoading}
+        >
+          {googleLoading ? <InlineSpinner /> : <GoogleIcon />}
+          {googleLoading ? 'Opening Google...' : 'Continue with Google'}
+        </button>
+      </div>
 
       <div className="space-y-2 text-center text-sm text-slate-500">
         <p>
@@ -658,29 +478,8 @@ export function LoginForm({ onSwitchMode }: AuthSwitch) {
 export function RegisterForm({ onSwitchMode }: AuthSwitch) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { register, fetchSessions, adopt } = useAuth()
+  const { register } = useAuth()
   const { closeModal, setIsAuthenticating } = useAuthModal()
-
-  // Fetched once, purely for the duplicate-email check below — matched
-  // against a typed email only after a 409. Same GET /auth/sessions as
-  // LoginForm's chooser (THREE-FRONTENDS.md §3.6/§3.7).
-  const [sessions, setSessions] = useState<Array<{ surface: Surface; email: string }>>([])
-  const [adoptingSurface, setAdoptingSurface] = useState<Surface | null>(null)
-
-  useEffect(() => {
-    let active = true
-    fetchSessions()
-      .then((list) => {
-        if (active) setSessions(list)
-      })
-      .catch(() => {
-        if (active) setSessions([])
-      })
-    return () => {
-      active = false
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -700,7 +499,7 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
   }
   const [error, setError] = useState<string | null>(null)
   const [pendingDeletion, setPendingDeletion] = useState(false)
-  const [duplicate, setDuplicate] = useState<DuplicateMatch | null>(null)
+  const [existingAccount, setExistingAccount] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [isPasswordFocused, setIsPasswordFocused] = useState(false)
@@ -737,7 +536,7 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
 
     setLoading(true)
     setError(null)
-    setDuplicate(null)
+    setExistingAccount(false)
     setIsAuthenticating(true)
     logAuth('register:submit', { email: normalizedEmail, role: selectedRole })
 
@@ -751,35 +550,13 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
       closeModal()
       router.replace(resolveAuthDestination(searchParams))
     } catch (authError) {
-      logAuthError('register:error', {
-        message: authError instanceof Error ? authError.message : 'Unable to create account.',
-        role: selectedRole,
-      })
-      if (isEmailExistsError(authError)) {
-        const match = sessions.find((s) => s.email.toLowerCase() === normalizedEmail)
-        setDuplicate(match ?? 'no-session')
-      } else {
-        setError(authError instanceof Error ? authError.message : 'Unable to create account.')
-        setPendingDeletion(isPendingDeletionError(authError))
-      }
+      const message = authError instanceof Error ? authError.message : 'Unable to create account.'
+      logAuthError('register:error', { message, role: selectedRole })
+      setError(message)
+      setPendingDeletion(isPendingDeletionError(authError))
+      setExistingAccount(isEmailExistsError(authError))
     } finally {
       setLoading(false)
-      setIsAuthenticating(false)
-    }
-  }
-
-  const handleAdopt = async (surface: Surface) => {
-    setError(null)
-    setAdoptingSurface(surface)
-    setIsAuthenticating(true)
-    try {
-      await adopt(surface)
-      closeModal()
-      router.replace(resolveAuthDestination(searchParams))
-    } catch (authError) {
-      setError(authError instanceof Error ? authError.message : 'Could not continue with that account. Try signing in instead.')
-    } finally {
-      setAdoptingSurface(null)
       setIsAuthenticating(false)
     }
   }
@@ -829,148 +606,147 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
         </p>
       </div>
 
-      {duplicate ? (
-        <DuplicateNotice
-          email={email}
-          duplicate={duplicate}
-          adopting={adoptingSurface !== null}
-          onAdopt={(surface) => void handleAdopt(surface)}
-          onSwitchToLogin={() => onSwitchMode?.()}
+      <div className="space-y-4">
+        <input
+          className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand-900 focus:ring-4 focus:ring-brand-900/10"
+          type="email"
+          placeholder="Email address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
-      ) : (
-        <>
-          <div className="space-y-4">
-            <input
-              className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand-900 focus:ring-4 focus:ring-brand-900/10"
-              type="email"
-              placeholder="Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
 
-            <div className="space-y-2">
-              <div className="relative">
-                <input
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 pr-11 text-sm outline-none focus:border-brand-900 focus:ring-4 focus:ring-brand-900/10"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setIsPasswordFocused(true)}
-                  onBlur={() => setIsPasswordFocused(false)}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-700"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                </button>
+        <div className="space-y-2">
+          <div className="relative">
+            <input
+              className="w-full rounded-xl border border-slate-200 px-4 py-3 pr-11 text-sm outline-none focus:border-brand-900 focus:ring-4 focus:ring-brand-900/10"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onFocus={() => setIsPasswordFocused(true)}
+              onBlur={() => setIsPasswordFocused(false)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-700"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            </button>
+          </div>
+
+          {isPasswordFocused && (
+            <>
+              <div className="flex items-center gap-2">
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200">
+                  <div
+                    className={`h-full transition-all duration-300 ${
+                      strength <= 1
+                        ? 'w-1/4 bg-rose-500'
+                        : strength <= 3
+                          ? 'w-2/4 bg-amber-500'
+                          : 'w-full bg-emerald-500'
+                    }`}
+                  />
+                </div>
+                <span className="text-xs text-slate-500">{strengthLabel}</span>
               </div>
 
-              {isPasswordFocused && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200">
-                      <div
-                        className={`h-full transition-all duration-300 ${
-                          strength <= 1
-                            ? 'w-1/4 bg-rose-500'
-                            : strength <= 3
-                              ? 'w-2/4 bg-amber-500'
-                              : 'w-full bg-emerald-500'
-                        }`}
-                      />
-                    </div>
-                    <span className="text-xs text-slate-500">{strengthLabel}</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-1 text-xs">
-                    <p className={passwordChecks.length ? 'text-green-900' : 'text-slate-400'}>
-                      [ok] 8+ characters
-                    </p>
-                    <p className={passwordChecks.uppercase ? 'text-green-900' : 'text-slate-400'}>
-                      [ok] Uppercase
-                    </p>
-                    <p className={passwordChecks.number ? 'text-green-900' : 'text-slate-400'}>
-                      [ok] Number
-                    </p>
-                    <p className={passwordChecks.special ? 'text-green-900' : 'text-slate-400'}>
-                      [ok] Special char
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
-
-            <input
-              className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand-900 focus:ring-4 focus:ring-brand-900/10"
-              type="password"
-              placeholder="Confirm password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && void handleRegister()}
-            />
-          </div>
-
-          {role === 'organizer' && (
-            <label className="flex items-start gap-2 text-xs text-slate-600">
-              <input
-                type="checkbox"
-                checked={acceptedTermsChecked}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-slate-300"
-              />
-              <span>
-                I am <strong>{minAge} years or older</strong> and agree to the{" "}
-                <a href="/terms-and-conditions" target="_blank" className="font-semibold text-brand-700 underline">
-                  Terms &amp; Conditions
-                </a>{" "}
-                and{" "}
-                <a href="/privacy-policy" target="_blank" className="font-semibold text-brand-700 underline">
-                  Privacy Policy
-                </a>
-                .
-              </span>
-            </label>
+              <div className="grid grid-cols-2 gap-1 text-xs">
+                <p className={passwordChecks.length ? 'text-green-900' : 'text-slate-400'}>
+                  [ok] 8+ characters
+                </p>
+                <p className={passwordChecks.uppercase ? 'text-green-900' : 'text-slate-400'}>
+                  [ok] Uppercase
+                </p>
+                <p className={passwordChecks.number ? 'text-green-900' : 'text-slate-400'}>
+                  [ok] Number
+                </p>
+                <p className={passwordChecks.special ? 'text-green-900' : 'text-slate-400'}>
+                  [ok] Special char
+                </p>
+              </div>
+            </>
           )}
+        </div>
 
-          {error && (
-            pendingDeletion ? (
-              <PendingDeletionBanner message={error} />
-            ) : (
-              <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-600">
-                {error}
-              </p>
-            )
-          )}
+        <input
+          className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand-900 focus:ring-4 focus:ring-brand-900/10"
+          type="password"
+          placeholder="Confirm password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && void handleRegister()}
+        />
+      </div>
 
-          <button
-            onClick={() => void handleRegister()}
-            disabled={loading || !email || !password || !confirm || !acceptedTerms}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-900 py-3 text-sm font-semibold text-white transition hover:bg-brand-800 disabled:opacity-60"
-          >
-            {loading && <InlineSpinner />}
-            {loading ? 'Creating account...' : 'Create account'}
-          </button>
-
-          <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400">
-            <span className="h-px flex-1 bg-slate-200" />
-            or
-            <span className="h-px flex-1 bg-slate-200" />
-          </div>
-
-          <button
-            onClick={() => void handleGoogle()}
-            disabled={loading || googleLoading || !acceptedTerms}
-            className="flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-          >
-            {googleLoading ? <InlineSpinner /> : <GoogleIcon />}
-            {googleLoading ? 'Opening Google...' : 'Continue with Google'}
-          </button>
-        </>
+      {role === 'organizer' && (
+        <label className="flex items-start gap-2 text-xs text-slate-600">
+          <input
+            type="checkbox"
+            checked={acceptedTermsChecked}
+            onChange={(e) => setAcceptedTerms(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-slate-300"
+          />
+          <span>
+            I am <strong>{minAge} years or older</strong> and agree to the{" "}
+            <a href="/terms-and-conditions" target="_blank" className="font-semibold text-brand-700 underline">
+              Terms &amp; Conditions
+            </a>{" "}
+            and{" "}
+            <a href="/privacy-policy" target="_blank" className="font-semibold text-brand-700 underline">
+              Privacy Policy
+            </a>
+            .
+          </span>
+        </label>
       )}
+
+      {error && (
+        pendingDeletion ? (
+          <PendingDeletionBanner message={error} />
+        ) : existingAccount ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <p>{error}</p>
+            <button
+              type="button"
+              onClick={onSwitchMode}
+              className="mt-1.5 font-semibold text-brand-800 underline underline-offset-2"
+            >
+              Sign in instead →
+            </button>
+          </div>
+        ) : (
+          <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-600">
+            {error}
+          </p>
+        )
+      )}
+
+      <button
+        onClick={() => void handleRegister()}
+        disabled={loading || !email || !password || !confirm || !acceptedTerms}
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-900 py-3 text-sm font-semibold text-white transition hover:bg-brand-800 disabled:opacity-60"
+      >
+        {loading && <InlineSpinner />}
+        {loading ? 'Creating account...' : 'Create account'}
+      </button>
+
+      <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-400">
+        <span className="h-px flex-1 bg-slate-200" />
+        or
+        <span className="h-px flex-1 bg-slate-200" />
+      </div>
+
+      <button
+        onClick={() => void handleGoogle()}
+        disabled={loading || googleLoading || !acceptedTerms}
+        className="flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+      >
+        {googleLoading ? <InlineSpinner /> : <GoogleIcon />}
+        {googleLoading ? 'Opening Google...' : 'Continue with Google'}
+      </button>
 
       <div className="space-y-2 text-center text-sm text-slate-500">
         <p>

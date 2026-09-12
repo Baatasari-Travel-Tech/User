@@ -44,25 +44,6 @@ export type LoginChallengeResponse = ApiEnvelope<{ requires2FA: true; pending: s
 
 export type MessageResponse = ApiEnvelope<{ message: string }>;
 
-/**
- * Every product surface — which frontend a request or session belongs to.
- * See THREE-FRONTENDS.md §3.2. This frontend always sends the implicit
- * "user" surface (no X-Baatasari-Surface header — the backend's own
- * back-compat default for a request with none), but the type also covers
- * what GET /auth/sessions reports about a browser's OTHER surfaces, for the
- * "Continue as …" chooser.
- */
-export type Surface = "user" | "organizer" | "venue";
-
-/**
- * GET /auth/sessions — the "which accounts does this browser hold a session
- * for, right now?" read behind the "Continue as alice@…" chooser
- * (THREE-FRONTENDS.md §3.6/§3.7).
- */
-export type SessionsResponse = ApiEnvelope<{
-  sessions: Array<{ surface: Surface; email: string }>;
-}>;
-
 export type ApiErrorPayload = {
   success?: false;
   code: string;
