@@ -17,7 +17,9 @@ import type {
   LoginChallengeResponse,
   OrganizerProfile,
   SafeUser,
+  SessionsResponse,
   SimplePreferences,
+  Surface,
   TalentProfile,
   UserProfile,
 } from "@/types/api"
@@ -72,6 +74,8 @@ type AuthCtx = {
   confirmTwoFactorRecovery: (pending: string, otp: string) => Promise<void>
   register: (payload: { email: string; password: string; role: "USER" | "ORGANIZER"; acceptedTerms: boolean }) => Promise<void>
   googleAuth: (idToken: string, role?: "USER" | "ORGANIZER") => Promise<void>
+  fetchSessions: () => Promise<Array<{ surface: Surface; email: string }>>
+  adopt: (fromSurface?: Surface) => Promise<void>
   logout: () => Promise<void>
   logoutAllDevices: () => Promise<void>
   bootstrap: () => Promise<void>
@@ -451,6 +455,27 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     await hydrateForUser(response.data.user)
   }
 
+  // GET /auth/sessions — every account this browser holds a valid session
+  // for, across all three surfaces. Powers the "Continue as alice@…" chooser
+  // (THREE-FRONTENDS.md §3.6/§3.7) — first built on the venue surface
+  // (Venue/components/auth/login-register.tsx), ported here for parity.
+  // Never throws on a missing/garbage cookie — the backend just omits it.
+  const fetchSessions = async () => {
+    const response = await apiRequest<SessionsResponse>("/auth/sessions")
+    return response.data.sessions
+  }
+
+  // POST /auth/adopt — mints a session on THIS surface from a valid session
+  // already held on another one. No password: holding the httpOnly cookie
+  // for fromSurface already proved identity.
+  const adopt = async (fromSurface?: Surface) => {
+    const response = await apiRequest<AuthResponse>("/auth/adopt", {
+      method: "POST",
+      body: fromSurface ? JSON.stringify({ fromSurface }) : undefined,
+    })
+    await hydrateForUser(response.data.user)
+  }
+
   const logout = async () => {
     try {
       await apiRequest("/auth/logout", {
@@ -643,6 +668,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     confirmTwoFactorRecovery,
     register,
     googleAuth,
+    fetchSessions,
+    adopt,
     logout,
     logoutAllDevices,
     bootstrap,
