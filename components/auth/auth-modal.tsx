@@ -1,10 +1,28 @@
 'use client'
 
+import { useState } from 'react'
 import { AuthModalProvider, useAuthModal } from './auth-modal-context'
 import { LoginForm, RegisterForm } from './auth-forms'
 
 function AuthModalContent() {
   const { open, mode, closeModal, setMode, isAuthenticating } = useAuthModal()
+
+  // LoginForm reports which of its own steps it's on (credentials/totp/
+  // recovery) — the toggle below only makes sense on the credentials step;
+  // switching modes mid-2FA-entry makes no sense, same as Venue's own
+  // toggle disappearing during its equivalent step.
+  const [loginStep, setLoginStep] = useState<'credentials' | 'totp' | 'recovery'>('credentials')
+  // Adjust-during-render (the pattern this codebase already uses elsewhere
+  // for "reset when a prop changes", e.g. RegisterForm's role latch) rather
+  // than a useEffect — reset whenever the modal (re)opens or mode changes,
+  // since either means a fresh LoginForm/RegisterForm mount that starts back
+  // on 'credentials'.
+  const [syncedFor, setSyncedFor] = useState({ mode, open })
+  if (syncedFor.mode !== mode || syncedFor.open !== open) {
+    setSyncedFor({ mode, open })
+    setLoginStep('credentials')
+  }
+  const showModeToggle = !(mode === 'login' && loginStep !== 'credentials')
 
   if (!open && !isAuthenticating) return null
 
@@ -55,8 +73,34 @@ function AuthModalContent() {
           </svg>
         </button>
 
+        {/* mt-6 on the pill below clears the close button (absolute, top-4
+            h-8 = ends 48px down) — it's full-width, unlike each form's own
+            short heading text, so it needs room the heading never did. */}
+        {showModeToggle && (
+          <div className="mt-6 mb-5 flex rounded-full bg-slate-100 p-1">
+            <button
+              type="button"
+              onClick={() => setMode('login')}
+              className={`flex-1 rounded-full py-2 text-sm font-semibold transition ${
+                mode === 'login' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Log in
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('register')}
+              className={`flex-1 rounded-full py-2 text-sm font-semibold transition ${
+                mode === 'register' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Register
+            </button>
+          </div>
+        )}
+
         {mode === 'login' ? (
-          <LoginForm onSwitchMode={() => setMode('register')} />
+          <LoginForm onSwitchMode={() => setMode('register')} onStepChange={setLoginStep} />
         ) : (
           <RegisterForm onSwitchMode={() => setMode('login')} />
         )}

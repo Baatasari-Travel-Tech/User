@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/app/providers'
 import { resolveUserHome } from '@/lib/auth/navigation'
@@ -89,7 +89,19 @@ const resolveGoogleOAuthRedirectUrl = (role: 'USER' | 'ORGANIZER', redirectPath:
   return `${base}/api/v1/auth/google/redirect?${params.toString()}`
 }
 
-export function LoginForm({ onSwitchMode }: AuthSwitch) {
+// AuthSwitch's onSwitchMode isn't destructured below — the toggle in
+// AuthModalContent replaced its one caller here (the removed "Sign Up" link)
+// — but it stays in the type so that component can keep passing it without
+// a type error; RegisterForm's own duplicate-account button still uses it.
+export function LoginForm({
+  onStepChange,
+}: AuthSwitch & {
+  // Lets AuthModalContent hide the login/register toggle while this form is
+  // past the credentials screen (entering a 2FA code, or its recovery OTP) —
+  // switching modes mid-2FA makes no sense, same as Venue's own toggle
+  // disappearing during its equivalent step.
+  onStepChange?: (step: 'credentials' | 'totp' | 'recovery') => void
+}) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { login, verifyTwoFactor, requestTwoFactorRecovery, confirmTwoFactorRecovery } = useAuth()
@@ -101,6 +113,12 @@ export function LoginForm({ onSwitchMode }: AuthSwitch) {
   const [step, setStep] = useState<'credentials' | 'totp' | 'recovery'>(() =>
     searchParams.get('totpPending') ? 'totp' : 'credentials',
   )
+  // Layout effect, not a plain one: this must land before paint so a mount
+  // that starts on 'totp' (the ?totpPending case above) never shows the
+  // toggle for even one frame before hiding it.
+  useLayoutEffect(() => {
+    onStepChange?.(step)
+  }, [step, onStepChange])
   const [pending, setPending] = useState<string | null>(() => searchParams.get('totpPending'))
   const [totpCode, setTotpCode] = useState('')
   const [recoveryOtp, setRecoveryOtp] = useState('')
@@ -450,16 +468,6 @@ export function LoginForm({ onSwitchMode }: AuthSwitch) {
       </div>
 
       <div className="space-y-2 text-center text-sm text-slate-500">
-        <p>
-          Don&apos;t have an account?{' '}
-          <button
-            onClick={onSwitchMode}
-            className="font-semibold text-brand-800"
-          >
-            Sign Up
-          </button>
-        </p>
-
         <p className="text-xs">
           By continuing, you agree to our{' '}
           <a href="/terms-and-conditions" target="_blank" className="font-semibold text-brand-800 underline-offset-2 hover:underline">
@@ -749,16 +757,6 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
       </button>
 
       <div className="space-y-2 text-center text-sm text-slate-500">
-        <p>
-          Already have an account?{' '}
-          <button
-            onClick={onSwitchMode}
-            className="font-semibold text-brand-800"
-          >
-            Sign in
-          </button>
-        </p>
-
         {role === 'user' && (
           <p className="text-xs">
             By continuing, you agree to our{' '}
