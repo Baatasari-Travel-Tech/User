@@ -16,7 +16,12 @@ export type SafeUser = {
   email: string;
   role: BackendRole;
   onboardingStatus: OnboardingStatus;
-  emailVerified: boolean;
+  // Per-surface, not one shared flag — this app only ever reads
+  // organizerEmailVerified (Organizer's own onboarding/document gates);
+  // venueEmailVerified rides along unused, same reason organizerApproved
+  // etc. do for a plain User-role account.
+  organizerEmailVerified: boolean;
+  venueEmailVerified: boolean;
   organizerDocumentsSubmitted: boolean;
   organizerApproved: boolean;
   // PENDING | CHANGES_REQUESTED | APPROVED | REJECTED — the richer review

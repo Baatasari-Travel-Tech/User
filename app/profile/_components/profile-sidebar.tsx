@@ -179,7 +179,7 @@ export function ProfileSidebar({
               {location}
             </span>
           ) : null}
-          {user?.emailVerified ? (
+          {user?.organizerEmailVerified ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-700">
               <CheckCircle2 className="h-3 w-3" />
               Verified

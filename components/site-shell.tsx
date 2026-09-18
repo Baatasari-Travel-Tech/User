@@ -81,7 +81,7 @@ function UserMenu({
     userRoles.some((record) => record.role === role)
   )
   const canSwitchRoles = hasOrganizerRole && switchableRoles.length > 1
-  const isOrganizerEmailUnverified = activeRole === 'EVENT_ORGANIZER' && user?.emailVerified === false
+  const isOrganizerEmailUnverified = activeRole === 'EVENT_ORGANIZER' && user?.organizerEmailVerified === false
   const showActivityLink = activeRole === 'USER'
   const profileHref = activeRole === 'EVENT_ORGANIZER' ? '/organizer/profile' : '/profile'
 

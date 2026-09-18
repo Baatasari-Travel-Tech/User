@@ -126,7 +126,7 @@ export function IdentitySection() {
                   readOnly
                   disabled
                 />
-                {user?.emailVerified ? (
+                {user?.organizerEmailVerified ? (
                   <CheckCircle2 className="h-4 w-4 text-emerald-500" aria-label="Verified" />
                 ) : null}
               </div>

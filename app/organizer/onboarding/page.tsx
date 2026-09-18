@@ -1006,7 +1006,7 @@ export default function OrganizerOnboardingPage() {
         window.localStorage.removeItem(GST_CHOICE_STORAGE_KEY)
       }
 
-      if (user?.emailVerified) {
+      if (user?.organizerEmailVerified) {
         if (user.organizerDocumentsSubmitted) {
           router.replace("/organizer/pending")
           return

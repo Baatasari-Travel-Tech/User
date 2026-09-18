@@ -39,7 +39,7 @@ export function SecuritySection() {
 
   const email = session?.user?.email ?? profile?.email ?? ""
   const phone = (profile?.phone ?? "").replace(/^\+91/, "")
-  const emailVerified = !!user?.emailVerified
+  const emailVerified = !!user?.organizerEmailVerified
   const totpEnabled = !!user?.totpEnabled
 
   const [step, setStep] = useState<DeleteStep>("idle")

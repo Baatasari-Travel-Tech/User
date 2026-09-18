@@ -114,7 +114,7 @@ const normalizeLegacyProfile = (user: SafeUser | null, profile: UserProfile | nu
 
 const getOrganizerVerificationStatus = (user: SafeUser | null) => {
   if (!user || user.role !== "ORGANIZER") return null
-  if (!user.emailVerified) return "EMAIL_NOT_VERIFIED"
+  if (!user.organizerEmailVerified) return "EMAIL_NOT_VERIFIED"
   if (!user.organizerDocumentsSubmitted) return "DOCUMENTS_REQUIRED"
   if (user.organizerApproved) return "APPROVED"
   // CHANGES_REQUESTED / REJECTED / PENDING — the richer status from

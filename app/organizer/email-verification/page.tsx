@@ -48,8 +48,8 @@ export default function OrganizerEmailVerificationPage() {
         auth: true,
         body: JSON.stringify({ otp }),
       })
-      // Pulls the fresh emailVerified:true from the server — the gate
-      // effect below reacts to organizerVerificationStatus changing and
+      // Pulls the fresh organizerEmailVerified:true from the server — the
+      // gate effect below reacts to organizerVerificationStatus changing and
       // sends this page on to /organizer/document-upload itself.
       await refreshOrganizerStatus()
     } catch (err) {
@@ -104,7 +104,7 @@ export default function OrganizerEmailVerificationPage() {
       return
     }
 
-    if (organizerVerificationStatus === "DOCUMENTS_REQUIRED" || user.emailVerified) {
+    if (organizerVerificationStatus === "DOCUMENTS_REQUIRED" || user.organizerEmailVerified) {
       router.replace("/organizer/document-upload")
     }
   }, [organizerVerificationStatus, router, user])
