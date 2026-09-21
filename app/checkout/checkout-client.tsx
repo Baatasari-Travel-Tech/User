@@ -142,6 +142,14 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
   // window used to render nothing at all — the Razorpay modal had already
   // closed and the page just sat there until the redirect.
   const [verifyingPayment, setVerifyingPayment] = useState(false)
+  // True for as long as the gateway's own payment widget is up — both
+  // providers clear checkoutLoading right as their modal opens (so the
+  // button doesn't show its own "Processing..." spinner fighting for
+  // attention with the gateway's overlay), which re-enabled "Pay Now"
+  // underneath that overlay for the whole time it was open. Tracked
+  // separately so the button can stay genuinely disabled during that window
+  // without also showing a redundant spinner.
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   // Set by the payment.failed listener, read by ondismiss — Razorpay fires
   // both for a genuine decline (the modal stays open for retry, but a
   // subsequent manual close should explain what happened rather than
@@ -384,11 +392,13 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
       // ── Cashfree ──────────────────────────────────────────────────────
       if (order.provider === "cashfree") {
         setCheckoutLoading(false)
+        setPaymentModalOpen(true)
         const cashfree = await loadCashfree(order.mode ?? "sandbox")
         const result = await cashfree.checkout({
           paymentSessionId: order.paymentSessionId,
           redirectTarget: "_modal",
         })
+        setPaymentModalOpen(false)
         // Modal dismissed without completing a payment → let them retry.
         if (result?.error && !result?.paymentDetails && !result?.redirect) {
           setCheckoutError(
@@ -455,6 +465,7 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
         }) => {
           lastFailureReasonRef.current = null
           setCheckoutError(null)
+          setPaymentModalOpen(false)
           setVerifyingPayment(true)
           try {
             // Same slow-verify-looks-like-failure risk as the Cashfree path
@@ -502,6 +513,7 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
           // resetting to an idle button in that case.
           ondismiss: () => {
             setCheckoutLoading(false)
+            setPaymentModalOpen(false)
             if (lastFailureReasonRef.current) {
               setCheckoutError(`Your payment didn't go through: ${lastFailureReasonRef.current}. You can try again.`)
               lastFailureReasonRef.current = null
@@ -520,8 +532,14 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
           response.error?.description || response.error?.reason || "the payment was declined"
       })
 
+      setPaymentModalOpen(true)
       razorpay.open()
     } catch (error) {
+      // Safety net: an unexpected throw between either setPaymentModalOpen(true)
+      // above and its matching clear (e.g. loadCashfree/cashfree.checkout
+      // itself rejecting, or razorpay.open() throwing) would otherwise leave
+      // the button disabled forever with no path left to re-enable it.
+      setPaymentModalOpen(false)
       if (error && typeof error === "object" && "code" in error) {
         const apiError = error as ApiError
         setCheckoutError(apiError.message)
@@ -1006,16 +1024,24 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.98 }}
                       type="submit"
-                      disabled={checkoutLoading || verifyingPayment || !tiers.length || totalQty === 0}
+                      disabled={
+                        checkoutLoading ||
+                        paymentModalOpen ||
+                        verifyingPayment ||
+                        !tiers.length ||
+                        totalQty === 0
+                      }
                       className="w-full rounded-xl bg-(--brand-navy) px-4 py-3 text-base font-semibold text-(--white) shadow-lg transition-all hover:bg-[#0A172C] hover:shadow-xl disabled:opacity-60 sm:px-6 sm:py-4 sm:text-lg"
                     >
                       {verifyingPayment
                         ? "Confirming..."
-                        : checkoutLoading
-                          ? "Processing..."
-                          : isFreeEvent
-                            ? "Get Free Ticket"
-                            : "Pay Now"}
+                        : paymentModalOpen
+                          ? "Complete payment in the window above..."
+                          : checkoutLoading
+                            ? "Processing..."
+                            : isFreeEvent
+                              ? "Get Free Ticket"
+                              : "Pay Now"}
                     </motion.button>
                   </form>
                 </div>
