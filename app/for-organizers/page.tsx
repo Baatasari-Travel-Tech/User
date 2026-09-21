@@ -1,6 +1,5 @@
 import { Fragment } from 'react'
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import {
   ArrowRight,
   BarChart3,
@@ -39,7 +38,13 @@ export const metadata: Metadata = {
   alternates: { canonical: '/for-organizers' },
 }
 
-const REGISTER_HREF = '/for-organizers?auth=register&role=organizer'
+// Organizer signup now lives on its own app (organizer.baatasari.com), which
+// speaks the current X-Baatasari-Surface auth contract. The in-app modal this
+// used to open (?auth=register&role=organizer) predates that split and never
+// sent the surface header, so it silently created a plain user account
+// instead of an organizer one. Point straight at the real thing instead of
+// fixing a flow that's slated for removal anyway.
+const REGISTER_HREF = 'https://organizer.baatasari.com/register'
 
 const TRUST_POINTS = ['Takes less than 5 minutes', 'No setup fee', 'Start free']
 
@@ -128,14 +133,16 @@ const WHY_CARDS = [
 ]
 
 function CreateEventCta() {
+  // Plain <a>, not next/link: this leaves the app entirely, so there's no
+  // client-router transition to gain from Link, only a wasted resolve attempt.
   return (
-    <Link
+    <a
       href={REGISTER_HREF}
       className="inline-flex items-center gap-2 rounded-full bg-(--brand-navy) px-7 py-3.5 text-sm font-semibold text-white shadow-md transition hover:bg-(--brand-navy-hover) hover:shadow-lg active:scale-95"
     >
       Create Your First Event
       <ArrowRight className="h-4 w-4" aria-hidden />
-    </Link>
+    </a>
   )
 }
 
@@ -461,13 +468,13 @@ export default function ForOrganizersPage() {
           </div>
 
           <div className="px-4 pt-6">
-            <Link
+            <a
               href={REGISTER_HREF}
               className="flex w-full items-center justify-center gap-3 rounded-full bg-(--brand-navy) py-4 text-base font-semibold text-white shadow-md transition hover:bg-(--brand-navy-hover) active:scale-95"
             >
               Create Your First Event
               <ArrowRight className="h-5 w-5" aria-hidden />
-            </Link>
+            </a>
             <p className="mt-4 flex items-center justify-center gap-2 text-sm text-slate-500">
               <ShieldCheck className="h-4 w-4 text-emerald-600" aria-hidden />
               Secure. Reliable. Made for organizers like you.
