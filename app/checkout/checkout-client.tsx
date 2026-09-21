@@ -399,10 +399,17 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
         // A payment was attempted — our backend confirms it via Get Order.
         setVerifyingPayment(true)
         try {
+          // Verification makes a live round-trip to the gateway's "get order"
+          // API plus a DB transaction before responding — routinely slower
+          // than the client's default 12s timeout under any gateway latency.
+          // A timeout here reads as "verification failed," even though the
+          // charge went through and the ticket may already be issued — don't
+          // let a slow-but-successful verify look identical to a real failure.
           await apiRequest("/payments/verify", {
             method: "POST",
             auth: true,
             body: JSON.stringify({ orderId: order.orderId }),
+            timeoutMs: 30000,
           })
           setCheckoutSuccess("Payment verified successfully.")
           const ticketHref = `/order-confirmed/${order.orderId}`
@@ -450,6 +457,8 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
           setCheckoutError(null)
           setVerifyingPayment(true)
           try {
+            // Same slow-verify-looks-like-failure risk as the Cashfree path
+            // above — give the gateway round-trip + DB transaction real room.
             await apiRequest<{ data: { result: { ticket?: { id?: string } } } }>(
               "/payments/verify",
               {
@@ -461,6 +470,7 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
                   razorpayPaymentId: payment.razorpay_payment_id,
                   razorpaySignature: payment.razorpay_signature,
                 }),
+                timeoutMs: 30000,
               }
             )
 
