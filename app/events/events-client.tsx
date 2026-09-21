@@ -13,6 +13,29 @@ import type { EventSummary } from "@/types/api"
 
 const PHASE_ORDER: Record<string, number> = { ongoing: 0, upcoming: 1, recent: 2 }
 
+// The API caps `limit` at 100 per request (Backend/events.controller.ts),
+// and the browse page's search/category/when/budget/where filters all run
+// client-side over the full set — a single unpaginated request silently
+// dropped everything past the 50th event once there were more than that.
+// Walk pages the same way app/sitemap.ts already does, up to the same
+// generous ceiling, rather than teaching the filters themselves to be
+// server-paginated.
+const EVENTS_PAGE_SIZE = 100
+const EVENTS_MAX_PAGES = 20
+
+async function fetchAllEvents(): Promise<EventSummary[]> {
+  const all: EventSummary[] = []
+  for (let page = 0; page < EVENTS_MAX_PAGES; page++) {
+    const response = await apiRequest<{ data: { events: EventSummary[] } }>(
+      `/events?limit=${EVENTS_PAGE_SIZE}&offset=${page * EVENTS_PAGE_SIZE}`,
+    )
+    const batch = response.data.events
+    all.push(...batch)
+    if (batch.length < EVENTS_PAGE_SIZE) break
+  }
+  return all
+}
+
 // Partial, case-insensitive search across the fields a person would type —
 // no need to fill every field; any matching token is enough.
 function matchesQuery(event: EventSummary, query: string): boolean {
@@ -82,8 +105,7 @@ function EventsPageContent() {
 
   const eventsQuery = useQuery({
     queryKey: ["public-events"],
-    queryFn: () =>
-      apiRequest<{ data: { events: EventSummary[] } }>("/events").then((r) => r.data.events),
+    queryFn: fetchAllEvents,
     staleTime: 60_000,
   })
 
