@@ -264,7 +264,7 @@ export default function TicketDetailPage() {
                 {multiPass ? "Tickets" : "Ticket"}
               </p>
               <h1 className="mt-3 font-bricolage text-4xl text-(--brand-navy)">
-                {query.data?.eventTitle ?? "Loading ticket…"}
+                {query.data?.eventTitle ?? (query.isError ? "Couldn't load this ticket" : "Loading ticket…")}
               </h1>
             </div>
 
@@ -400,7 +400,13 @@ export default function TicketDetailPage() {
                 </div>
               ) : null}
             </>
-          ) : null}
+          ) : (
+            <div className="py-12 text-center text-(--gray-500)">
+              {query.isError
+                ? "We couldn't load this ticket. Please try again in a moment."
+                : "Loading ticket details…"}
+            </div>
+          )}
         </motion.div>
       </main>
     </ProtectedRoute>

@@ -129,6 +129,12 @@ export default function HistoryPage() {
                 <div key={i} className="h-36 animate-pulse rounded-2xl bg-slate-100" />
               ))}
             </div>
+          ) : query.isError ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Ticket className="mb-3 h-10 w-10 text-slate-300" />
+              <p className="text-sm font-medium text-slate-600">We couldn&apos;t load your booked events</p>
+              <p className="mt-1 text-xs text-slate-400">Please try again in a moment.</p>
+            </div>
           ) : bookedTickets.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Ticket className="mb-3 h-10 w-10 text-slate-300" />
