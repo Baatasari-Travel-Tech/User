@@ -353,6 +353,10 @@ export type TicketRecord = {
   // Every ticket on the order (one per tier line), in creation order.
   tickets?: OrderTicket[];
   orderStatus: string;
+  // Ticket-price-only, distinct from totalAmount (which also includes the
+  // platform + gateway fees) — use this for a per-ticket "unit price",
+  // never totalAmount / quantity.
+  subtotal: number;
   totalAmount: number;
   refundedAmount: number;
   currency: string;

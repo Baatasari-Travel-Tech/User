@@ -225,7 +225,7 @@ export default function HistoryPage() {
                                   <span className="font-semibold">{t.quantity}</span>
                                   <span className="text-slate-400"> × </span>
                                   <span className="font-semibold text-slate-900">
-                                    {formatAmount(t.totalAmount / t.quantity, t.currency)}
+                                    {formatAmount(t.subtotal / t.quantity, t.currency)}
                                   </span>
                                 </span>
                               )}
