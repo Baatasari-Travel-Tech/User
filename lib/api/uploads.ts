@@ -52,6 +52,9 @@ type AvatarUploadPayload = {
 }
 
 const uploadAvatarImage = async (path: "/user/avatar" | "/organizer/avatar", file: File) => {
+  // A multi-MB image PUT on a slow connection can easily outlast the
+  // client's default 12s JSON-request timeout, aborting an upload that
+  // would otherwise have succeeded.
   const response = await apiRequest<ApiEnvelope<AvatarUploadPayload>>(path, {
     method: "PUT",
     auth: true,
@@ -59,6 +62,7 @@ const uploadAvatarImage = async (path: "/user/avatar" | "/organizer/avatar", fil
       "Content-Type": file.type || "application/octet-stream",
     },
     body: file,
+    timeoutMs: 60000,
   })
 
   return response.data.avatar
@@ -94,6 +98,7 @@ export async function uploadEventCoverImage(eventId: string, file: File) {
             "Content-Type": file.type || "application/octet-stream",
           },
           body: file,
+          timeoutMs: 60000,
         }
       )
 
