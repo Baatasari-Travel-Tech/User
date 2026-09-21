@@ -177,7 +177,7 @@ function Chip({
 
 export default function TalentOnboardingPage() {
   const router = useRouter()
-  const { talentProfile } = useAuth()
+  const { talentProfile, refreshRoles } = useAuth()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -193,9 +193,13 @@ export default function TalentOnboardingPage() {
       availableFor: talentProfile?.availableFor.join(", ") ?? "",
       location: talentProfile?.location ?? "",
       expectedPriceBand: talentProfile?.expectedPriceBand ?? "",
-      instagram: "",
-      youtube: "",
+      // Written positionally as [website, instagram, youtube] in finish()
+      // below — read back the same way, or a resubmission (e.g. the
+      // post-payment refresh right after this fix) wipes whichever of these
+      // wasn't restored, since the backend overwrites the whole array.
       website: talentProfile?.portfolioLinks?.[0] ?? "",
+      instagram: talentProfile?.portfolioLinks?.[1] ?? "",
+      youtube: talentProfile?.portfolioLinks?.[2] ?? "",
     },
   })
 
@@ -210,9 +214,9 @@ export default function TalentOnboardingPage() {
       availableFor: talentProfile?.availableFor.join(", ") ?? "",
       location: talentProfile?.location ?? "",
       expectedPriceBand: talentProfile?.expectedPriceBand ?? "",
-      instagram: "",
-      youtube: "",
       website: talentProfile?.portfolioLinks?.[0] ?? "",
+      instagram: talentProfile?.portfolioLinks?.[1] ?? "",
+      youtube: talentProfile?.portfolioLinks?.[2] ?? "",
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [talentProfile])
@@ -241,9 +245,12 @@ export default function TalentOnboardingPage() {
         .filter((item): item is string => Boolean(item))
 
       const finish = async (extra: Record<string, unknown>) => {
+        // Same gateway-round-trip-plus-DB-transaction shape as checkout's
+        // /payments/verify — give it real room past the client's default 12s.
         await apiRequest("/talent/onboarding/complete", {
           method: "POST",
           auth: true,
+          timeoutMs: 30000,
           body: JSON.stringify({
             orderId,
             stageName: values.stageName,
@@ -259,6 +266,11 @@ export default function TalentOnboardingPage() {
             ...extra,
           }),
         })
+        // ProtectedRoute gates /talent/dashboard on the cached talentProfile's
+        // paymentStatus. Without refreshing it first, it's still whatever it
+        // was before this payment (null or PENDING), and the dashboard
+        // immediately bounces the freshly-paid user back to this page.
+        await refreshRoles()
         setSuccess("Your talent profile is live. Redirecting to your dashboard.")
         router.push("/talent/dashboard")
       }
