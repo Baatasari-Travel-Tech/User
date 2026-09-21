@@ -65,6 +65,13 @@ export default function ProfilePage() {
   // as dirty, and reset() establishes the new clean baseline.
   useEffect(() => {
     if (!profile) return
+    // Avoid clobbering an in-progress edit: an avatar upload also refreshes
+    // `profile` (see the avatar crop handler below), and this reset used to
+    // run unconditionally — silently discarding whatever the user had typed
+    // and not yet saved. A real save already re-baselines the form itself
+    // (identity-section.tsx's own `reset(data, { keepValues: true })`), so
+    // this effect only needs to hydrate when the form isn't mid-edit.
+    if (form.formState.isDirty) return
     form.reset({
       name: profile.full_name ?? "",
       phone: (profile.phone ?? "").replace(/^\+91/, ""),
