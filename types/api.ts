@@ -1,4 +1,3 @@
-export type BackendRole = "USER" | "ORGANIZER" | "ADMIN";
 export type OnboardingStatus = "PENDING" | "COMPLETED";
 
 // Every successful API response from the Express backend is wrapped in
@@ -13,7 +12,6 @@ export type ApiEnvelope<T> = {
 export type SafeUser = {
   id: string;
   email: string;
-  role: BackendRole;
   onboardingStatus: OnboardingStatus;
   // Per-surface, not one shared flag — this app only ever reads
   // organizerEmailVerified (Organizer's own onboarding/document gates);
