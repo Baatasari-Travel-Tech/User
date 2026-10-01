@@ -5,6 +5,11 @@
 > and are mapped into Tailwind via `@theme inline`. Change a token here → re-themes the whole app.
 >
 > Light theme only (no `.dark` block yet). Many colors are authored in **OKLCH**.
+>
+> **Correction 2026-10-01:** §2 lists five fonts, but `app/layout.tsx` loads only
+> **Bricolage Grotesque, Albert Sans and Poppins** — Inter and Sora were removed
+> (no usages). The `.btn-*` classes in §4.1 exist in `globals.css` but no
+> component uses them.
 
 ---
 

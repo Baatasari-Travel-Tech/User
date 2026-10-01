@@ -1,5 +1,16 @@
 # Deploying the frontend to Cloudflare
 
+> **Status 2026-10-01: this migration is done.** The site is live on the
+> Cloudflare Worker **`user`** (renamed from `frontend`), built from `main` of
+> the **`User`** repo (renamed from `Frontend`) — not the `cloudflare-migration`
+> branch, and Vercel is no longer involved. The steps below are kept as the
+> reference for how it was set up (S3 ISR cache, build variables vs secrets,
+> Workers-not-Pages). One correction: "Images are one size for everyone" (Known
+> differences) is no longer true — `lib/image-loader.ts` now serves responsive
+> pre-encoded variants. If the repo is ever reconnected, re-add
+> `NEXT_PUBLIC_API_URL` under Settings → **Build** (the 2026-09-09 reconnect
+> wiped it).
+
 You are moving this site off Vercel and onto Cloudflare Workers. Cloudflare will
 build it from GitHub the same way Vercel does — you push, it builds, it deploys.
 

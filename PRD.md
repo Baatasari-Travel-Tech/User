@@ -1,5 +1,14 @@
 # Baatasari — Product Requirements Document (PRD)
 
+> **⚠️ Dated snapshot (4 Jul 2026) — what has changed since (as of 2026-10-01):**
+> payments are **Cashfree**, not Razorpay; organizers now use their own app at
+> `organizer.baatasari.com` (the `/organizer/*` routes here are a legacy copy
+> awaiting deletion) and there is no in-app role switcher for new organizers;
+> venues have their own app at `venue.baatasari.com` (no longer "Coming Soon");
+> `User.role` was removed — capabilities come from per-profile records; auth is
+> httpOnly cookies, not a `Bearer` header; organizer self-cancel with automatic
+> refunds is live. Current state: `README.md` and `D:\Baatasari\THREE-FRONTENDS.md`.
+
 > **Document type:** Product Requirements Document (functional scope — not a visual/style guide; see `FRONTEND_DESIGN_DOC.md` for design tokens & components).
 > **Audience:** UI/UX design team, product & engineering.
 > **Source of truth:** `Frontend/` (Next.js app) · **Date:** 4 Jul 2026 · **App version:** 0.1.0

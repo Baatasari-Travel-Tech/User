@@ -1,5 +1,14 @@
 # Baatasari — Frontend Product & Component Design Documentation (PCD)
 
+> **⚠️ Dated snapshot (25 Jun 2026) — corrections as of 2026-10-01:** only
+> **three** fonts are loaded (Bricolage Grotesque, Albert Sans, Poppins — Inter
+> and Sora were removed); the named `.btn-*` utility classes are unused (the
+> real "two button systems" split is shadcn `<Button>` vs inline `rounded-full`
+> buttons); organizer and venue screens now live in their own apps
+> (`organizer.baatasari.com`, `venue.baatasari.com`); the role switcher is
+> legacy. The route list in §7 predates `/checkout`, `/for-organizers`,
+> `/order-confirmed`, `/invoice`, `/maintenance` etc. — see `README.md`.
+
 > **Purpose** — A design-oriented snapshot of the **current live frontend** for the UI/UX team.
 > It documents the brand foundations, design tokens, typography, the full component
 > inventory and every screen, so the team can audit, redesign or extend the product
