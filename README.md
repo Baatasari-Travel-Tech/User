@@ -18,9 +18,8 @@ you — launching in Visakhapatnam.
 - **Browse events** — `/events` (search + category/when/budget/where filters,
   all events fetched page by page), `/events/[id]` (server-rendered, with
   `schema.org/Event` JSON-LD).
-- **Buy tickets** — `/checkout` → payment via **Cashfree** (live since
-  2026-09-08; the Razorpay path is still in the code as a one-env-var rollback
-  until Phase G cleanup) → `/order-confirmed/[id]` (QR tickets) →
+- **Buy tickets** — `/checkout` → payment via **Cashfree** (the only gateway;
+  Razorpay was removed 2026-10-01) → `/order-confirmed/[id]` (QR tickets) →
   `/invoice/[id]` (platform-fee GST invoice, print to PDF).
 - **Account** — sign-in/up in a modal (`/login`, `/register` are redirect
   shims), Google sign-in (server-side redirect flow — no client ID needed in
@@ -33,13 +32,11 @@ you — launching in Visakhapatnam.
 - **System** — `/maintenance` (site-wide switch set from the admin app),
   `/403`, legal/support pages (privacy, terms, refund, contact-us, grievance).
 
-### Legacy organizer screens (still here on purpose)
+### No organizer screens here
 
-`app/organizer/**` is the old in-app organizer console. It has been copied
-into the Organizer app, and is kept here until the founder finishes
-finalising Organizer — then it will be deleted in one pass together with the
-USER↔ORGANIZER mode toggle (`x-active-role`). See
-`SPLIT-ORGANIZER-FRONTEND.md` §2.3. Don't build new organizer features here.
+The old in-app organizer console and the USER↔ORGANIZER toggle were removed
+2026-10-01. `baatasari.com/organizer/*` redirects to the same page on
+organizer.baatasari.com, and every "for organizers" button links there.
 
 ## API & auth notes
 
@@ -49,8 +46,7 @@ USER↔ORGANIZER mode toggle (`x-active-role`). See
   a token. On a 401 it calls `POST /auth/refresh` once and retries; if that
   fails it clears the session (in every open tab) and goes to login.
 - This app is the `user` surface. It does **not** send `X-Baatasari-Surface`
-  (no header = `user` on the backend, by design). It still sends the legacy
-  `x-active-role` header for the organizer screens above.
+  (no header = `user` on the backend, by design).
 - `CORS_ORIGIN` on the backend must include `https://baatasari.com`.
 
 ## Build & deploy
@@ -74,12 +70,12 @@ Bricolage Grotesque (display), Albert Sans (UI), Poppins.
 ## Project layout
 
 ```
-app/                 routes (see above); app/organizer/** = legacy, see above
+app/                 routes (see above)
 components/          shell, auth modal, events, checkout, profile, talent,
-                     event-org/ (legacy organizer UI), ui/ (shadcn primitives)
+                     ui/ (shadcn primitives)
 lib/api/             API client + typed wrappers (uploads, site-config, ...)
 lib/auth/            session store, cross-tab channel, navigation helpers
-lib/payments/        cashfree.ts (live), razorpay.ts (rollback, Phase G)
+lib/payments/        cashfree.ts (Cashfree checkout SDK loader)
 middleware.ts        maintenance gate + X-Robots-Tag (runs on experimental-edge)
 ```
 

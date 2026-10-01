@@ -60,7 +60,7 @@ export default function RestaurantOwner() {
             {/*
               A real <a>, not a button with a router.push.
 
-              /for-restaurants is a 308 to venue.baatasari.com. Pushed
+              /for-venue is a 308 to venue.baatasari.com. Pushed
               through the client router, Next first fetches the RSC payload for
               it, follows the redirect cross-origin, and has that response
               blocked by CORS — the venue Worker sends no
@@ -80,7 +80,7 @@ export default function RestaurantOwner() {
               asChild
               className="font-albert font-medium text-lg leading-6 text-(--white) bg-brand-900 hover:bg-(--brand-navy)/90 px-8 py-3 rounded-full transition h-auto"
             >
-              <a href="/for-restaurants">Check It Out</a>
+              <a href="/for-venue">Check It Out</a>
             </Button>
           </motion.div>
 

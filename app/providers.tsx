@@ -12,12 +12,10 @@ import {
 import { useAuthStore } from "@/lib/auth/store"
 import { ApiError } from "@/types/api"
 import type {
-  ActiveRole,
   ApiEnvelope,
   AuthResponse,
   LegacyProfile,
   LoginChallengeResponse,
-  OrganizerProfile,
   SafeUser,
   SimplePreferences,
   TalentProfile,
@@ -28,7 +26,9 @@ import type {
 // hands back a pending ticket the caller must resolve via verifyTwoFactor.
 export type LoginResult = { requires2FA: false } | { requires2FA: true; pending: string }
 
-export type AppRole = "USER" | "EVENT_ORGANIZER" | "TALENT"
+// The roles this site knows about. Organizers have their own site
+// (organizer.baatasari.com); there is no in-app role switching any more.
+export type AppRole = "USER" | "TALENT"
 
 export type UserRoleRecord = {
   id: string
@@ -50,30 +50,23 @@ type AuthCtx = {
   isLoading: boolean
   hasHydrated: boolean
   profile: LegacyProfile | null
-  organizerProfile: OrganizerProfile | null
   talentProfile: TalentProfile | null
   isLoadingProfile: boolean
-  organizerVerificationStatus: string | null
-  isLoadingOrganizerStatus: boolean
   userPreferences: SimplePreferences | null
   isLoadingPreferences: boolean
   userRoles: UserRoleRecord[]
   isLoadingRoles: boolean
-  activeRole: AppRole
-  switchRole: (role: AppRole) => Promise<void>
   refreshProfile: () => Promise<void>
-  refreshOrganizerStatus: () => Promise<void>
   refreshPreferences: () => Promise<void>
   refreshRoles: () => Promise<void>
   updateProfile: (payload: Record<string, unknown>, options?: { refresh?: boolean }) => Promise<void>
   updateUserPreferences: (payload: Partial<SimplePreferences>) => Promise<void>
-  completeRoleOnboarding: (role: AppRole, payload?: Record<string, unknown>) => Promise<void>
+  completeOnboarding: (payload?: Record<string, unknown>) => Promise<void>
   login: (payload: { email: string; password: string }) => Promise<LoginResult>
   verifyTwoFactor: (pending: string, code: string) => Promise<void>
   requestTwoFactorRecovery: (pending: string) => Promise<void>
   confirmTwoFactorRecovery: (pending: string, otp: string) => Promise<void>
-  register: (payload: { email: string; password: string; role: "USER" | "ORGANIZER"; acceptedTerms: boolean }) => Promise<void>
-  googleAuth: (idToken: string, role?: "USER" | "ORGANIZER") => Promise<void>
+  register: (payload: { email: string; password: string; acceptedTerms: boolean }) => Promise<void>
   logout: () => Promise<void>
   logoutAllDevices: () => Promise<void>
   bootstrap: () => Promise<void>
@@ -114,19 +107,6 @@ const normalizeLegacyProfile = (user: SafeUser | null, profile: UserProfile | nu
   }
 }
 
-const getOrganizerVerificationStatus = (user: SafeUser | null) => {
-  if (!user || user.role !== "ORGANIZER") return null
-  if (!user.organizerEmailVerified) return "EMAIL_NOT_VERIFIED"
-  if (!user.organizerDocumentsSubmitted) return "DOCUMENTS_REQUIRED"
-  if (user.organizerApproved) return "APPROVED"
-  // CHANGES_REQUESTED / REJECTED / PENDING — the richer status from
-  // Admin-Backend's review state machine, so /organizer/pending can explain
-  // *why* instead of showing the same "under review" copy for all three.
-  if (user.organizerReviewStatus === "CHANGES_REQUESTED") return "CHANGES_REQUESTED"
-  if (user.organizerReviewStatus === "REJECTED") return "REJECTED"
-  return "PENDING"
-}
-
 const userToSession = (user: SafeUser | null): Session | null =>
   user
     ? {
@@ -155,30 +135,6 @@ const mapProfilePayload = (payload: Record<string, unknown>) => ({
   locationLng: typeof payload.locationLng === "number" ? payload.locationLng : undefined,
   gender: typeof payload.gender === "string" ? payload.gender : undefined,
   profession: typeof payload.profession === "string" ? payload.profession : undefined,
-  organizerDisplayName:
-    typeof payload.organizer_display_name === "string"
-      ? payload.organizer_display_name
-      : typeof payload.organizerDisplayName === "string"
-        ? payload.organizerDisplayName
-        : undefined,
-  organizerDescription:
-    typeof payload.organizer_description === "string"
-      ? payload.organizer_description
-      : typeof payload.organizerDescription === "string"
-        ? payload.organizerDescription
-        : undefined,
-  companyName:
-    typeof payload.company_name === "string"
-      ? payload.company_name
-      : typeof payload.companyName === "string"
-        ? payload.companyName
-        : undefined,
-  companyWebsite:
-    typeof payload.company_website === "string"
-      ? payload.company_website
-      : typeof payload.companyWebsite === "string"
-        ? payload.companyWebsite
-        : undefined,
 })
 
 export function useAuth(): AuthCtx {
@@ -189,7 +145,6 @@ export function useAuth(): AuthCtx {
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [isLoadingProfile, setIsLoadingProfile] = useState(false)
-  const [isLoadingOrganizerStatus, setIsLoadingOrganizerStatus] = useState(false)
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(false)
   const [isLoadingRoles, setIsLoadingRoles] = useState(false)
 
@@ -197,16 +152,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     bootstrapping,
     hasHydrated,
     user,
-    activeRole,
     profile,
-    organizerProfile,
     preferences,
     talentProfile,
     setBootstrapping,
     setUser,
-    setActiveRole,
     setProfile,
-    setOrganizerProfile,
     setPreferences,
     setTalentProfile,
     clearSession,
@@ -229,24 +180,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       setIsLoadingProfile(false)
     }
   }, [setProfile, setUser])
-
-  const loadOrganizerProfile = useCallback(async (currentUser: SafeUser | null = useAuthStore.getState().user) => {
-    if (!currentUser || currentUser.role !== "ORGANIZER") {
-      setOrganizerProfile(null)
-      return
-    }
-
-    setIsLoadingOrganizerStatus(true)
-    try {
-      const response = await apiRequest<{ data: { user: SafeUser; profile: OrganizerProfile } }>("/organizer/profile", {
-        auth: true,
-      })
-      setOrganizerProfile(response.data.profile)
-      setUser(response.data.user)
-    } finally {
-      setIsLoadingOrganizerStatus(false)
-    }
-  }, [setOrganizerProfile, setUser])
 
   const loadPreferences = useCallback(async (currentUser: SafeUser | null = useAuthStore.getState().user) => {
     if (!currentUser || currentUser.onboardingStatus !== "COMPLETED") {
@@ -282,41 +215,17 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   }, [setTalentProfile])
 
   const hydrateForUser = useCallback(async (currentUser: SafeUser) => {
-    const nextActiveRole: ActiveRole = currentUser.role === "ORGANIZER" ? "ORGANIZER" : "USER"
-
     setUser(currentUser)
-    setActiveRole(nextActiveRole)
     // Prime minimal profile state immediately so route guards can use
     // onboarding status from the auth payload even if profile APIs lag.
     setProfile(normalizeLegacyProfile(currentUser, null))
 
-    // /user/preferences and /talent/profile sit behind requireUserAccess, which
-    // rejects an ORGANIZER unless their active role is USER. Calling them while
-    // acting as an organizer is a guaranteed 403 on every login: harmless
-    // (allSettled swallows it) but it fills the console with red herrings.
-    // switchRole() loads them when the organizer moves to USER mode.
-    const canUseUserRoutes = nextActiveRole === "USER"
-    if (!canUseUserRoutes) {
-      setPreferences(null)
-      setTalentProfile(null)
-    }
-
     await Promise.allSettled([
       loadProfile(currentUser),
-      loadOrganizerProfile(currentUser),
-      ...(canUseUserRoutes ? [loadPreferences(currentUser), loadTalentProfile(currentUser)] : []),
+      loadPreferences(currentUser),
+      loadTalentProfile(currentUser),
     ])
-  }, [
-    loadOrganizerProfile,
-    loadPreferences,
-    loadProfile,
-    loadTalentProfile,
-    setActiveRole,
-    setPreferences,
-    setProfile,
-    setTalentProfile,
-    setUser,
-  ])
+  }, [loadPreferences, loadProfile, loadTalentProfile, setProfile, setUser])
 
   const bootstrap = useCallback(async () => {
     setBootstrapping(true)
@@ -329,7 +238,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         apiRequest<ApiEnvelope<{ user: SafeUser }>>("/auth/me", {
           auth: true,
           retryOn401: false,
-          activeRole: useAuthStore.getState().activeRole,
         })
 
       let me: ApiEnvelope<{ user: SafeUser }>
@@ -516,13 +424,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     announceSignIn(response.data.user)
   }
 
-  const register = async (payload: { email: string; password: string; role: "USER" | "ORGANIZER"; acceptedTerms: boolean }) => {
+  const register = async (payload: { email: string; password: string; acceptedTerms: boolean }) => {
     const response = await apiRequest<AuthResponse>("/auth/register", {
       method: "POST",
       body: JSON.stringify(payload),
     })
 
-    setActiveRole(payload.role === "ORGANIZER" ? "ORGANIZER" : "USER")
     await hydrateForUser(response.data.user)
     announceSignIn(response.data.user)
   }
@@ -556,30 +463,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const googleAuth = async (idToken: string, role: "USER" | "ORGANIZER" = "USER") => {
-    const response = await apiRequest<AuthResponse>("/auth/google", {
-      method: "POST",
-      body: JSON.stringify({ idToken, role }),
-    })
-
-    setActiveRole(response.data.user.role === "ORGANIZER" ? "ORGANIZER" : "USER")
-    await hydrateForUser(response.data.user)
-    announceSignIn(response.data.user)
-  }
-
-  const switchRole = async (role: AppRole) => {
-    if (role === "EVENT_ORGANIZER" && useAuthStore.getState().user?.role === "ORGANIZER") {
-      setActiveRole("ORGANIZER")
-      return
-    }
-
-    setActiveRole("USER")
-    // User routes are reachable now. An organizer's bootstrap skips these (they
-    // would 403 while acting as an organizer), so this is where they get loaded.
-    // Set first: the store is synchronous, so these requests carry the USER role.
-    await Promise.allSettled([loadPreferences(), loadTalentProfile()])
-  }
-
   const updateProfile = async (payload: Record<string, unknown>) => {
     await apiRequest("/user/profile", {
       method: "PUT",
@@ -600,27 +483,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     setPreferences(response.data.preferences)
   }
 
-  const completeRoleOnboarding = async (role: AppRole, payload?: Record<string, unknown>) => {
-    if (role === "EVENT_ORGANIZER") {
-      await apiRequest("/organizer/onboarding/complete", {
-        method: "POST",
-        auth: true,
-        body: JSON.stringify(payload ?? {}),
-      })
-      const currentUser = useAuthStore.getState().user
-      if (currentUser) {
-        const completedUser: SafeUser = {
-          ...currentUser,
-          onboardingStatus: "COMPLETED",
-          updatedAt: new Date().toISOString(),
-        }
-        setUser(completedUser)
-        setProfile(normalizeLegacyProfile(completedUser, null))
-      }
-      void bootstrap()
-      return
-    }
-
+  const completeOnboarding = async (payload?: Record<string, unknown>) => {
     await apiRequest("/user/onboarding/complete", {
       method: "POST",
       auth: true,
@@ -653,15 +516,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       },
     ]
 
-    if (user.role === "ORGANIZER") {
-      roles.push({
-        id: `${user.id}-organizer`,
-        role: "EVENT_ORGANIZER",
-        onboarding_completed: user.onboardingStatus === "COMPLETED",
-        updated_at: user.updatedAt,
-      })
-    }
-
     if (talentProfile?.paymentStatus === "PAID") {
       roles.push({
         id: `${user.id}-talent`,
@@ -680,11 +534,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     isLoading: bootstrapping,
     hasHydrated,
     profile,
-    organizerProfile,
     talentProfile,
     isLoadingProfile,
-    organizerVerificationStatus: getOrganizerVerificationStatus(user),
-    isLoadingOrganizerStatus,
     userPreferences: preferences
       ? {
           ...preferences,
@@ -698,10 +549,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     isLoadingPreferences,
     userRoles,
     isLoadingRoles,
-    activeRole: activeRole === "ORGANIZER" ? "EVENT_ORGANIZER" : "USER",
-    switchRole,
     refreshProfile: () => loadProfile(),
-    refreshOrganizerStatus: () => loadOrganizerProfile(),
     refreshPreferences: () => loadPreferences(),
     refreshRoles: async () => {
       setIsLoadingRoles(true)
@@ -713,13 +561,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     },
     updateProfile,
     updateUserPreferences,
-    completeRoleOnboarding,
+    completeOnboarding,
     login,
     verifyTwoFactor,
     requestTwoFactorRecovery,
     confirmTwoFactorRecovery,
     register,
-    googleAuth,
     logout,
     logoutAllDevices,
     bootstrap,

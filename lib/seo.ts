@@ -45,12 +45,10 @@ export const PRIVATE_PATH_PREFIXES = [
   "/maintenance",
   "/onboarding",
   "/order-confirmed/",
-  "/organizer/",
   "/register",
   "/reset-password",
   "/talent/dashboard",
   "/talent/onboarding",
-  "/verify-email",
 ]
 
 export const isPrivatePath = (pathname: string): boolean =>

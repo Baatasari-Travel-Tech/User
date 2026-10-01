@@ -65,7 +65,7 @@ export default function EventOrganizer() {
               <Link> here rather than the plain <a> used for the venue CTA, and
               the difference is the destination: /for-organizers is a route in
               this app, so the client router is the right thing to hand it to.
-              /for-restaurants is a redirect off this origin, which is exactly
+              /for-venue is a redirect off this origin, which is exactly
               what the client router cannot usefully do.
             */}
             <Button

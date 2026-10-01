@@ -6,14 +6,11 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { useAuth } from '@/app/providers'
 import {
-  ArrowLeftRight,
-  Bell,
   CalendarPlus,
   ChevronDown,
   Home,
   LogOut,
   Menu,
-  Plus,
   Sparkles,
   Ticket,
   UserRound,
@@ -26,10 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { DEFAULT_AVATAR_IMAGE } from '@/lib/avatar'
-import {
-  type AppRole, ROLE_LABELS,
-  getRoleDashboard, getRoleOnboarding,
-} from '@/lib/roles'
+import { resolveUserHome } from '@/lib/auth/navigation'
 import { AuthModalRoot } from '@/components/auth/auth-modal'
 import { useAuthModal } from '@/components/auth/auth-modal-context'
 import { useMaintenance } from '@/hooks/use-maintenance'
@@ -57,10 +51,8 @@ function UserMenu({
   showLogout?: boolean
   onLogout?: () => Promise<void>
 }) {
-  const { activeRole, userRoles, switchRole, profile, user } = useAuth()
-  const router = useRouter()
+  const { profile, user } = useAuth()
   const [open, setOpen] = useState(false)
-  const [showRoles, setShowRoles] = useState(false)
   const [busy, setBusy] = useState(false)
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null)
   const ref = useRef<HTMLDivElement>(null)
@@ -69,36 +61,11 @@ function UserMenu({
     const fn = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false)
-        setShowRoles(false)
       }
     }
     document.addEventListener('mousedown', fn)
     return () => document.removeEventListener('mousedown', fn)
   }, [])
-
-  const hasOrganizerRole = userRoles.some((record) => record.role === 'EVENT_ORGANIZER')
-  const switchableRoles = (['USER', 'EVENT_ORGANIZER'] as AppRole[]).filter((role) =>
-    userRoles.some((record) => record.role === role)
-  )
-  const canSwitchRoles = hasOrganizerRole && switchableRoles.length > 1
-  const isOrganizerEmailUnverified = activeRole === 'EVENT_ORGANIZER' && user?.organizerEmailVerified === false
-  const showActivityLink = activeRole === 'USER'
-  const profileHref = activeRole === 'EVENT_ORGANIZER' ? '/organizer/profile' : '/profile'
-
-  const handleSwitch = async (role: AppRole) => {
-    if (role === activeRole || busy || !switchableRoles.includes(role)) return
-    setOpen(false)
-    setShowRoles(false)
-    setBusy(true)
-    await switchRole(role)
-    const existing = userRoles.find(r => r.role === role)
-    router.push(
-      (!existing || !existing.onboarding_completed)
-        ? getRoleOnboarding(role)
-        : getRoleDashboard(role)
-    )
-    setBusy(false)
-  }
 
   const avatarUrl = profile?.avatar_url ?? null
   // A new avatar URL deserves a fresh chance to load, so the recorded failure
@@ -124,7 +91,7 @@ function UserMenu({
   const handleMenuLogout = async () => {
     if (!onLogout || busy) return
     setOpen(false)
-    setShowRoles(false)
+    setBusy(true)
     await onLogout()
   }
 
@@ -132,7 +99,7 @@ function UserMenu({
     <div className="relative" ref={ref}>
       <button
         className="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-60"
-        onClick={() => { setOpen(o => !o); setShowRoles(false) }}
+        onClick={() => setOpen(o => !o)}
         aria-label="Open user menu"
         aria-expanded={open}
         disabled={busy}
@@ -189,77 +156,21 @@ function UserMenu({
 
           <div className="grid gap-1 p-2">
             <Link
-              href={profileHref}
+              href="/profile"
               className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               onClick={() => setOpen(false)}
             >
               <UserRound className="h-4 w-4 text-slate-500" />
               My profile
             </Link>
-            {showActivityLink && (
-              <Link
-                href="/history"
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                onClick={() => setOpen(false)}
-              >
-                <Ticket className="h-4 w-4 text-slate-500" />
-                My tickets
-              </Link>
-            )}
-            {canSwitchRoles && (
-              <>
-                <div className="my-1 h-px bg-slate-100" />
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-                  onClick={() => setShowRoles(s => !s)}
-                  disabled={isOrganizerEmailUnverified}
-                >
-                  <ArrowLeftRight className="h-4 w-4 text-slate-500" />
-                  <span className="flex-1">Switch to</span>
-                </button>
-                {isOrganizerEmailUnverified && (
-                  <p className="px-3 pt-1 text-xs text-slate-500">
-                    Verify your email to switch profiles.
-                  </p>
-                )}
-                {showRoles && (
-                  <div className="mt-1 grid gap-1 rounded-xl bg-slate-50 p-2">
-                    {switchableRoles.map(role => {
-                      const record = userRoles.find(r => r.role === role)
-                      const isActive = role === activeRole
-                      const isDone = record?.onboarding_completed === true
-                      const chipClass = isActive
-                        ? 'bg-brand-900 text-white'
-                        : isDone
-                          ? 'bg-brand-900/5 text-brand-800'
-                          : 'bg-brand-900/5 text-brand-900'
-
-                      return (
-                        <button
-                          key={role}
-                          role="option"
-                          aria-selected={isActive}
-                          className={`flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left text-sm font-medium transition ${
-                            isActive
-                              ? 'bg-white text-slate-900'
-                              : 'text-slate-700 hover:bg-white'
-                          }`}
-                          onClick={() => handleSwitch(role)}
-                          disabled={isActive || busy || isOrganizerEmailUnverified}
-                        >
-                          <span>{ROLE_LABELS[role]}</span>
-                          <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${chipClass}`}>
-                            {isActive ? 'Active' : isDone ? 'Ready' : 'Set up'}
-                          </span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-              </>
-            )}
-
+            <Link
+              href="/history"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              onClick={() => setOpen(false)}
+            >
+              <Ticket className="h-4 w-4 text-slate-500" />
+              My tickets
+            </Link>
             <div className="my-1 h-px bg-slate-100" />
 
             <Link
@@ -319,7 +230,7 @@ function AuthQueryParamSync() {
 
   useEffect(() => {
     // ?auth=login is a second way in, independent of the header buttons — it is
-    // how /for-organizers links into signup. Hiding the buttons without this
+    // how some links open sign-in/sign-up directly. Hiding the buttons without this
     // would leave the modal openable by URL on any page still reachable during
     // maintenance.
     if (maintenance) return
@@ -331,8 +242,8 @@ function AuthQueryParamSync() {
 
   // Strip the auth params only after the modal has actually been open and then
   // closed. Without the ref this raced the opening effect above (open is still
-  // false in the same render pass), wiping ?role=organizer before the register
-  // form could read it.
+  // false in the same render pass), wiping ?redirect before the form could
+  // read it.
   const authModalWasOpenRef = useRef(false)
   useEffect(() => {
     if (open) {
@@ -385,7 +296,7 @@ function MaintenanceSessionGuard() {
 }
 
 function SiteShellContent({ children }: { children: React.ReactNode }) {  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { session, activeRole, userRoles, organizerVerificationStatus, profile, logout, isLoading } = useAuth()
+  const { session, user, profile, logout, isLoading } = useAuth()
   const [logoutKey, setLogoutKey] = useState(0)
   const router = useRouter()
   const pathname = usePathname()
@@ -420,14 +331,9 @@ function SiteShellContent({ children }: { children: React.ReactNode }) {  const
   const [navSnapshot, setNavSnapshot] = useState({
     pathname,
     user: session?.user,
-    activeRole,
   })
-  if (
-    navSnapshot.pathname !== pathname ||
-    navSnapshot.user !== session?.user ||
-    navSnapshot.activeRole !== activeRole
-  ) {
-    setNavSnapshot({ pathname, user: session?.user, activeRole })
+  if (navSnapshot.pathname !== pathname || navSnapshot.user !== session?.user) {
+    setNavSnapshot({ pathname, user: session?.user })
     setMobileMenuOpen(false)
   }
 
@@ -454,35 +360,8 @@ function SiteShellContent({ children }: { children: React.ReactNode }) {  const
     return email.split('@')[0] || 'there'
   })()
   const isLoggedIn = Boolean(session?.user)
-  const isOrganizerActive = Boolean(session?.user) && activeRole === 'EVENT_ORGANIZER'
-  const activeRoleRecord = userRoles.find((record) => record.role === activeRole)
-  const userRoleRecord = userRoles.find((record) => record.role === 'USER')
-  const organizerRoleRecord = userRoles.find((record) => record.role === 'EVENT_ORGANIZER')
-  const organizerOnboarded = organizerRoleRecord?.onboarding_completed === true
-  const isOrganizerApproved = organizerOnboarded && organizerVerificationStatus === 'APPROVED'
-
-  const resolveHomeHref = (): string => {
-    if (!session?.user) return '/'
-
-    if (activeRole === 'EVENT_ORGANIZER') {
-      if (!organizerOnboarded) return getRoleOnboarding('EVENT_ORGANIZER')
-      if (organizerVerificationStatus === 'EMAIL_NOT_VERIFIED') return '/organizer/email-verification'
-      if (organizerVerificationStatus === 'DOCUMENTS_REQUIRED') return '/organizer/document-upload'
-      if (organizerVerificationStatus !== 'APPROVED') return '/organizer/pending'
-      return getRoleDashboard('EVENT_ORGANIZER')
-    }
-
-    if (activeRole === 'USER') {
-      return userRoleRecord?.onboarding_completed ? '/events' : '/onboarding'
-    }
-
-    return activeRoleRecord?.onboarding_completed
-      ? getRoleDashboard(activeRole)
-      : getRoleOnboarding(activeRole)
-  }
-
-  const homeHref = resolveHomeHref()
-  // `external` marks a link that leaves this app. /for-restaurants is a 308 in
+  const homeHref = session?.user ? resolveUserHome(user) : '/'
+  // `external` marks a link that leaves this app. /for-venue is a 308 in
   // next.config.ts pointing at venue.baatasari.com, and next/link would
   // try to resolve it through the client router first — a round trip whose only
   // possible outcome is a hard navigation anyway, and one more thing to go
@@ -495,7 +374,7 @@ function SiteShellContent({ children }: { children: React.ReactNode }) {  const
         { label: 'Home', href: homeHref },
         { label: 'Events', href: '/events' },
         { label: 'Talents', href: '/talent' },
-        { label: 'Venues', href: '/for-restaurants', external: true },
+        { label: 'Venues', href: '/for-venue', external: true },
       ]
 
   // Maintenance page stands alone — no site nav/footer chrome.
@@ -537,28 +416,26 @@ function SiteShellContent({ children }: { children: React.ReactNode }) {  const
             />
             <span className="text-lg font-semibold tracking-tight">Baatasari</span>
           </Link>
-          {!isOrganizerActive && (
-            <nav className="hidden flex-1 items-center justify-center gap-8 text-sm font-medium text-slate-700 md:flex">
-              {navLinks.map(link => {
-                const active = isActive(link.href)
-                const className = `pb-1 transition hover:text-slate-900 ${
-                  active ? 'text-slate-900 font-semibold border-b-2 border-slate-900' : ''
-                }`
-                if (link.external) {
-                  return (
-                    <a key={link.href} href={link.href} className={className}>
-                      {link.label}
-                    </a>
-                  )
-                }
+          <nav className="hidden flex-1 items-center justify-center gap-8 text-sm font-medium text-slate-700 md:flex">
+            {navLinks.map(link => {
+              const active = isActive(link.href)
+              const className = `pb-1 transition hover:text-slate-900 ${
+                active ? 'text-slate-900 font-semibold border-b-2 border-slate-900' : ''
+              }`
+              if (link.external) {
                 return (
-                  <Link key={link.href} href={link.href} className={className}>
+                  <a key={link.href} href={link.href} className={className}>
                     {link.label}
-                  </Link>
+                  </a>
                 )
-              })}
-            </nav>
-          )}
+              }
+              return (
+                <Link key={link.href} href={link.href} className={className}>
+                  {link.label}
+                </Link>
+              )
+            })}
+          </nav>
           <div className="flex items-center gap-2 md:gap-3" key={logoutKey}>
             {/* Until the session call comes back we genuinely do not know
                 whether this is a signed-in visitor, and guessing wrong means
@@ -577,29 +454,7 @@ function SiteShellContent({ children }: { children: React.ReactNode }) {  const
             {isLoading ? (
               <div className="h-10 w-[132px] animate-pulse rounded-full bg-slate-100 md:w-[196px]" />
             ) : session?.user ? (
-              isOrganizerActive ? (
-                <>
-                  {isOrganizerApproved ? (
-                    <>
-                      <button
-                        type="button"
-                        aria-label="Notifications"
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
-                      >
-                        <Bell className="h-5 w-5" />
-                      </button>
-                      <Link
-                        href="/organizer/create-event"
-                        className="inline-flex items-center justify-center gap-1 rounded-full bg-(--brand-navy) px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800"
-                      >
-                        <Plus className="h-4 w-4" />
-                        <span className="hidden sm:inline">Create Event</span>
-                      </Link>
-                    </>
-                  ) : null}
-                  <UserMenu showLogout onLogout={handleLogout} />
-                </>
-              ) : (
+              (
                 <>
                   <span className="hidden text-sm font-medium text-slate-700 lg:inline-flex">
                     Hi, <span className="ml-1 font-semibold text-slate-900">{greetingName}</span>
@@ -643,9 +498,7 @@ function SiteShellContent({ children }: { children: React.ReactNode }) {  const
                     <DropdownMenuItem
                       className="cursor-pointer gap-2.5 py-2.5 font-medium"
                       onClick={() => {
-                        // Plain user register — make sure no organizer role param lingers.
                         const params = new URLSearchParams(window.location.search)
-                        params.delete('role')
                         params.set('auth', 'register')
                         router.push(`${pathname}?${params.toString()}`)
                       }}
@@ -653,17 +506,13 @@ function SiteShellContent({ children }: { children: React.ReactNode }) {  const
                       <UserRound className="h-4 w-4 text-slate-500" />
                       For Users
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="cursor-pointer gap-2.5 py-2.5 font-medium"
-                      onClick={() => {
-                        const params = new URLSearchParams(window.location.search)
-                        params.set('auth', 'register')
-                        params.set('role', 'organizer')
-                        router.push(`${pathname}?${params.toString()}`)
-                      }}
-                    >
-                      <CalendarPlus className="h-4 w-4 text-slate-500" />
-                      For Organizers
+                    {/* Organizers sign up on their own site. A plain <a>, as for
+                        the other external links in this header. */}
+                    <DropdownMenuItem asChild className="cursor-pointer gap-2.5 py-2.5 font-medium">
+                      <a href="https://organizer.baatasari.com/register">
+                        <CalendarPlus className="h-4 w-4 text-slate-500" />
+                        For Organizers
+                      </a>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -680,7 +529,7 @@ function SiteShellContent({ children }: { children: React.ReactNode }) {  const
             )}
           </div>
         </div>
-        {!isOrganizerActive && mobileMenuOpen && (
+        {mobileMenuOpen && (
           <nav className="absolute top-full left-0 right-0 z-50 rounded-b-2xl bg-white px-4 py-3 shadow-lg md:hidden">
             <div className="grid gap-2">
               {navLinks.map((link) => {

@@ -3,29 +3,27 @@
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
 import type {
-  ActiveRole,
   LegacyProfile,
-  OrganizerProfile,
   SafeUser,
   SimplePreferences,
   TalentProfile,
 } from "@/types/api"
 
+// No activeRole / organizerProfile any more: the in-app USER↔ORGANIZER mode
+// went with the legacy organizer screens (organizers use
+// organizer.baatasari.com). Old snapshots in localStorage that still carry
+// those keys are simply ignored on rehydrate.
 type AuthStore = {
   bootstrapping: boolean
   hasHydrated: boolean
   user: SafeUser | null
-  activeRole: ActiveRole
   profile: LegacyProfile | null
-  organizerProfile: OrganizerProfile | null
   preferences: SimplePreferences | null
   talentProfile: TalentProfile | null
   setBootstrapping: (value: boolean) => void
   setHasHydrated: (value: boolean) => void
   setUser: (user: SafeUser | null) => void
-  setActiveRole: (role: ActiveRole) => void
   setProfile: (profile: LegacyProfile | null) => void
-  setOrganizerProfile: (profile: OrganizerProfile | null) => void
   setPreferences: (preferences: SimplePreferences | null) => void
   setTalentProfile: (profile: TalentProfile | null) => void
   clearSession: () => void
@@ -37,25 +35,19 @@ export const useAuthStore = create<AuthStore>()(
       bootstrapping: true,
       hasHydrated: false,
       user: null,
-      activeRole: "USER",
       profile: null,
-      organizerProfile: null,
       preferences: null,
       talentProfile: null,
       setBootstrapping: (value) => set({ bootstrapping: value }),
       setHasHydrated: (value) => set({ hasHydrated: value }),
       setUser: (user) => set({ user }),
-      setActiveRole: (role) => set({ activeRole: role }),
       setProfile: (profile) => set({ profile }),
-      setOrganizerProfile: (profile) => set({ organizerProfile: profile }),
       setPreferences: (preferences) => set({ preferences }),
       setTalentProfile: (profile) => set({ talentProfile: profile }),
       clearSession: () =>
         set({
           user: null,
-          activeRole: "USER",
           profile: null,
-          organizerProfile: null,
           preferences: null,
           talentProfile: null,
         }),
@@ -71,10 +63,8 @@ export const useAuthStore = create<AuthStore>()(
       // agree (both start empty), avoiding hydration mismatches.
       skipHydration: true,
       partialize: (state) => ({
-        activeRole: state.activeRole,
         user: state.user,
         profile: state.profile,
-        organizerProfile: state.organizerProfile,
         talentProfile: state.talentProfile,
         preferences: state.preferences,
       }),

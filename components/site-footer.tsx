@@ -52,10 +52,10 @@ export function SiteFooter() {
               <Link className="transition hover:text-white" href="/for-organizers">
                 Organizers
               </Link>
-              {/* Plain <a>: /for-restaurants is a 308 to venue.baatasari.com
+              {/* Plain <a>: /for-venue is a 308 to venue.baatasari.com
                   (see next.config.ts), so let the browser follow it rather than
                   asking the client router to discover it cannot. */}
-              <a className="transition hover:text-white" href="/for-restaurants">
+              <a className="transition hover:text-white" href="/for-venue">
                 Venues
               </a>
             </div>

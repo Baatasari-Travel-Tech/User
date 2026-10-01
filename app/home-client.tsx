@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/app/providers'
-import { getRoleDashboard, getRoleOnboarding } from '@/lib/roles'
+import { resolveUserHome } from '@/lib/auth/navigation'
 import Hero from "@/components/about/hero"
 import Features from "@/components/about/features"
 import { SiteFooter } from "@/components/site-footer"
@@ -16,32 +16,9 @@ import Marquee from "@/components/about/marquee"
 
 export default function HomeClient() {
     const router = useRouter()
-    const { session, activeRole, userRoles, organizerVerificationStatus, isLoading } = useAuth()
+    const { session, user, isLoading } = useAuth()
 
-    const homeHref = useMemo(() => {
-        if (!session?.user) return '/'
-
-        const activeRoleRecord = userRoles.find((record) => record.role === activeRole)
-        const userRoleRecord = userRoles.find((record) => record.role === 'USER')
-        const organizerRoleRecord = userRoles.find((record) => record.role === 'EVENT_ORGANIZER')
-
-        if (activeRole === 'EVENT_ORGANIZER') {
-            const organizerOnboarded = organizerRoleRecord?.onboarding_completed === true
-            if (!organizerOnboarded) return getRoleOnboarding('EVENT_ORGANIZER')
-            if (organizerVerificationStatus === 'EMAIL_NOT_VERIFIED') return '/organizer/email-verification'
-            if (organizerVerificationStatus === 'DOCUMENTS_REQUIRED') return '/organizer/document-upload'
-            if (organizerVerificationStatus !== 'APPROVED') return '/organizer/pending'
-            return getRoleDashboard('EVENT_ORGANIZER')
-        }
-
-        if (activeRole === 'USER') {
-            return userRoleRecord?.onboarding_completed ? '/events' : '/onboarding'
-        }
-
-        return activeRoleRecord?.onboarding_completed
-            ? getRoleDashboard(activeRole)
-            : getRoleOnboarding(activeRole)
-    }, [session?.user, activeRole, userRoles, organizerVerificationStatus])
+    const homeHref = useMemo(() => (session?.user ? resolveUserHome(user) : '/'), [session?.user, user])
 
     useEffect(() => {
         if (isLoading) return

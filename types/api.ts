@@ -1,5 +1,4 @@
 export type BackendRole = "USER" | "ORGANIZER" | "ADMIN";
-export type ActiveRole = "USER" | "ORGANIZER";
 export type OnboardingStatus = "PENDING" | "COMPLETED";
 
 // Every successful API response from the Express backend is wrapped in

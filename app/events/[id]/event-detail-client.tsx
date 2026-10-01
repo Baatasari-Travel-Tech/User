@@ -29,7 +29,7 @@ import {
 } from "lucide-react"
 import { useAuth } from "@/app/providers"
 import { useAuthModal } from "@/components/auth/auth-modal-context"
-import { ShareEventButton } from "@/components/event-org/share-event-button"
+import { ShareEventButton } from "@/components/events/share-event-button"
 import { isEventPast } from "@/lib/event-helpers"
 import { getEventCoverImageUrl } from "@/lib/event-cover"
 import { apiRequest } from "@/lib/api/client"

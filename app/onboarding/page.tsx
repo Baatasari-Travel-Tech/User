@@ -23,7 +23,7 @@ export default function OnboardingPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const nextHref = searchParams.get("next") || "/events"
-  const { user, profile, completeRoleOnboarding } = useAuth()
+  const { user, profile, completeOnboarding } = useAuth()
 
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -218,11 +218,6 @@ export default function OnboardingPage() {
   }
 
   const handleComplete = async () => {
-    if (user?.role === "ORGANIZER" && user.onboardingStatus !== "COMPLETED") {
-      router.replace("/organizer/onboarding")
-      return
-    }
-
     setLoading(true)
     setError(null)
 
@@ -257,7 +252,7 @@ export default function OnboardingPage() {
         setAvatarFile(null)
       }
 
-      await completeRoleOnboarding("USER", {
+      await completeOnboarding({
         fullName: name.trim(),
         phone: `+91${phone.trim()}`,
         dob: dob.trim(),
@@ -298,6 +293,7 @@ export default function OnboardingPage() {
                   aria-label="Upload profile image"
                   className="group relative h-52 w-52 overflow-hidden rounded-full border border-slate-200 bg-slate-50 shadow-[0_12px_22px_rgba(15,23,42,0.08)] transition hover:ring-4 hover:ring-brand-900/15"
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- a blob: preview of the photo just picked */}
                   <img
                     src={avatarPreview || DEFAULT_AVATAR_IMAGE}
                     alt="Profile preview"

@@ -8,21 +8,20 @@ import LoadingScreen from "@/components/loading-screen"
 type ProtectedRouteProps = {
   children: React.ReactNode
   requireOnboarding?: boolean
-  requireOrganizer?: boolean
   requireTalentPaid?: boolean
-  allowPendingOrganizer?: boolean
 }
 
+// Signed-in-only pages of baatasari.com. (The organizer checks that used to
+// live here went with the legacy organizer screens — organizers use
+// organizer.baatasari.com, which has its own RequireOrganizer gate.)
 export function ProtectedRoute({
   children,
   requireOnboarding = true,
-  requireOrganizer = false,
   requireTalentPaid = false,
-  allowPendingOrganizer = false,
 }: ProtectedRouteProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const { isLoading, hasHydrated, session, user, activeRole, organizerVerificationStatus, profile, talentProfile } = useAuth()
+  const { isLoading, hasHydrated, session, user, profile, talentProfile } = useAuth()
 
   useEffect(() => {
     // Don't act until the cached identity is loaded and a revalidation pass has
@@ -34,35 +33,8 @@ export function ProtectedRoute({
       return
     }
 
-    const hasCompletedOnboarding = profile?.global_onboarding_completed === true
-
-    if (requireOrganizer) {
-      if (user.role !== "ORGANIZER" || activeRole !== "EVENT_ORGANIZER") {
-        router.replace("/403")
-        return
-      }
-
-      if (!hasCompletedOnboarding) {
-        router.replace("/organizer/onboarding")
-        return
-      }
-
-      if (organizerVerificationStatus === "EMAIL_NOT_VERIFIED") {
-        router.replace("/organizer/email-verification")
-        return
-      }
-
-      if (organizerVerificationStatus === "DOCUMENTS_REQUIRED") {
-        router.replace("/organizer/document-upload")
-        return
-      }
-
-      if (organizerVerificationStatus !== "APPROVED" && !allowPendingOrganizer) {
-        router.replace("/organizer/pending")
-        return
-      }
-    } else if (requireOnboarding && !hasCompletedOnboarding) {
-      router.replace(user.role === "ORGANIZER" ? "/organizer/onboarding" : "/onboarding")
+    if (requireOnboarding && profile?.global_onboarding_completed !== true) {
+      router.replace("/onboarding")
       return
     }
 
@@ -70,15 +42,11 @@ export function ProtectedRoute({
       router.replace("/talent/onboarding")
     }
   }, [
-    activeRole,
     hasHydrated,
     isLoading,
-    organizerVerificationStatus,
     pathname,
     profile?.global_onboarding_completed,
-    allowPendingOrganizer,
     requireOnboarding,
-    requireOrganizer,
     requireTalentPaid,
     router,
     session?.user,

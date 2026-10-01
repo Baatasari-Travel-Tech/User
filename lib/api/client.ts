@@ -2,7 +2,7 @@
 
 import { useAuthStore } from "@/lib/auth/store"
 import { broadcastSessionCleared } from "@/lib/auth/session-channel"
-import { ApiError, type ActiveRole, type ApiErrorPayload } from "@/types/api"
+import { ApiError, type ApiErrorPayload } from "@/types/api"
 
 const API_PREFIX = "/api/v1"
 const DEFAULT_REQUEST_TIMEOUT_MS = 12000
@@ -13,9 +13,23 @@ const withPrefix = (path: string) => {
   return `${base}${API_PREFIX}${normalized}`
 }
 
+// This module sits below the component tree — it can't call useRouter()
+// itself — so AuthModalRoot (mounted on every page) hands it the router's
+// replace() once on mount (same pattern as Venue's lib/api/client.ts). Until
+// that registration lands — in practice never, since every apiRequest comes
+// from a component under AuthModalRoot — this falls back to a full reload.
+let navigate: ((href: string) => void) | null = null
+
+export const registerNavigate = (fn: (href: string) => void) => {
+  navigate = fn
+}
+
 const redirectToLogin = () => {
-  if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-    window.location.href = "/login"
+  if (typeof window === "undefined" || window.location.pathname === "/login") return
+  if (navigate) {
+    navigate("/login")
+  } else {
+    window.location.href = window.location.origin + "/login"
   }
 }
 
@@ -130,7 +144,6 @@ const refreshAccessToken = async (): Promise<RefreshOutcome> => {
 type RequestOptions = RequestInit & {
   auth?: boolean
   retryOn401?: boolean
-  activeRole?: ActiveRole | null
   timeoutMs?: number
 }
 
@@ -138,20 +151,14 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const {
     auth = false,
     retryOn401 = auth,
-    activeRole,
     timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
     headers,
     ...init
   } = options
-  const roleHeader = activeRole ?? useAuthStore.getState().activeRole
   const finalHeaders = new Headers(headers)
 
   if (!finalHeaders.has("Content-Type") && init.body && !(init.body instanceof FormData)) {
     finalHeaders.set("Content-Type", "application/json")
-  }
-
-  if (roleHeader) {
-    finalHeaders.set("x-active-role", roleHeader)
   }
 
   const makeRequest = async () => {

@@ -94,18 +94,42 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        // The organizer console moved to organizer.baatasari.com and the old
+        // copy here was removed 2026-10-01. The page paths are the same on the
+        // new site (dashboard, onboarding, pending, profile, create-event,
+        // manage-events, events/…, analytics, payments, document-upload,
+        // email-verification), so old bookmarks and emailed links land on the
+        // right page. Temporary (307), so it stays cheap to change.
+        source: "/organizer",
+        destination: "https://organizer.baatasari.com/dashboard",
+        permanent: false,
+      },
+      {
+        source: "/organizer/:path*",
+        destination: "https://organizer.baatasari.com/:path*",
+        permanent: false,
+      },
+      {
         // Venue partners live on their own Worker at venue.baatasari.com
-        // (D:/Restaurant/CodeBase/Frontend) — restaurant.baatasari.com until
-        // this destination changed. That old hostname is still attached to
-        // the same Worker (Cloudflare custom domains aren't torn down by
-        // removing them from wrangler.jsonc) and keeps serving on purpose:
-        // this redirect is permanent and browsers cache it hard, so anyone
-        // who followed /for-restaurants before this change may still be
-        // holding a cached 308 straight to the old hostname for a long
-        // time yet. Do not detach restaurant.baatasari.com in Cloudflare
-        // until well after this has had time to expire from caches.
+        // (D:\Baatasari\Venue). /for-venue is the link the nav and footer use
+        // (renamed from /for-restaurants 2026-10-01); /for-restaurants below
+        // keeps working for old links, bookmarks and campaigns.
         //
-        // This path is what the nav, the footer and any campaign link point
+        // No trailing slash on the destination, and the Venue app pins
+        // trailingSlash: false — flip either and every visitor takes a
+        // 308 → 308 → page chain.
+        source: "/for-venue",
+        destination: "https://venue.baatasari.com",
+        permanent: true,
+      },
+      {
+        // The old path. restaurant.baatasari.com was this destination before
+        // the rename to Venue; browsers cache a permanent redirect hard, so
+        // some visitors may still hold a cached 308 to that old hostname.
+        // (As of 2026-10-01 restaurant.baatasari.com no longer resolves —
+        // see SESSION-QUEUE.md #22.)
+        //
+        // These paths are what the nav, the footer and any campaign link point
         // at, so the subdomain is named in ONE place: if the venue pitch ever
         // moves onto this app, or onto a different host, that is a one-line
         // change here rather than a hunt through components.

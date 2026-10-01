@@ -7,7 +7,7 @@ import { resolveUserHome } from '@/lib/auth/navigation'
 import { useAuthStore } from '@/lib/auth/store'
 import { useAuthModal } from './auth-modal-context'
 import InlineSpinner from '@/components/ui/inline-spinner'
-import { CalendarPlus, Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { logAuth, logAuthError } from '@/lib/auth-log'
 import { ApiError } from '@/types/api'
 import { supportMailto } from '@/lib/support-mailto'
@@ -55,23 +55,7 @@ type AuthSwitch = {
   onSwitchMode?: () => void
 }
 
-const getOrganizerVerificationStatus = () => {
-  const currentUser = useAuthStore.getState().user
-  if (!currentUser || currentUser.role !== 'ORGANIZER') return null
-  if (!currentUser.organizerEmailVerified) return 'EMAIL_NOT_VERIFIED'
-  if (!currentUser.organizerDocumentsSubmitted) return 'DOCUMENTS_REQUIRED'
-  if (currentUser.organizerApproved) return 'APPROVED'
-  if (currentUser.organizerReviewStatus === 'CHANGES_REQUESTED') return 'CHANGES_REQUESTED'
-  if (currentUser.organizerReviewStatus === 'REJECTED') return 'REJECTED'
-  return 'PENDING'
-}
-
-const resolvePostAuthDestination = () =>
-  resolveUserHome({
-    user: useAuthStore.getState().user,
-    activeRole: useAuthStore.getState().activeRole === 'ORGANIZER' ? 'EVENT_ORGANIZER' : 'USER',
-    organizerVerificationStatus: getOrganizerVerificationStatus(),
-  })
+const resolvePostAuthDestination = () => resolveUserHome(useAuthStore.getState().user)
 
 const resolveAuthDestination = (searchParams: { get: (key: string) => string | null }) => {
   const redirect = searchParams.get('redirect')
@@ -79,10 +63,9 @@ const resolveAuthDestination = (searchParams: { get: (key: string) => string | n
   return resolvePostAuthDestination()
 }
 
-const resolveGoogleOAuthRedirectUrl = (role: 'USER' | 'ORGANIZER', redirectPath: string) => {
+const resolveGoogleOAuthRedirectUrl = (redirectPath: string) => {
   const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? ''
   const params = new URLSearchParams()
-  params.set('role', role)
   if (redirectPath.startsWith('/')) {
     params.set('redirect', redirectPath)
   }
@@ -249,7 +232,7 @@ export function LoginForm({
 
     try {
       const redirectPath = resolveAuthDestination(searchParams)
-      const googleUrl = resolveGoogleOAuthRedirectUrl('USER', redirectPath)
+      const googleUrl = resolveGoogleOAuthRedirectUrl(redirectPath)
       window.location.assign(googleUrl)
     } catch (authError) {
       const message = authError instanceof Error ? authError.message : 'Google sign-in failed. Please try again.'
@@ -493,32 +476,15 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  // Role is fixed by the entry point (organizer CTAs pass ?role=organizer,
-  // e.g. from /for-organizers) — there is deliberately no in-form toggle.
-  // Latched rather than derived live: the URL cleanup in SiteShell can strip
-  // ?role while the modal is open, and the form must not flip back to user.
-  const roleParam = searchParams.get('role')
-  const [role, setLatchedRole] = useState<'user' | 'organizer'>(
-    roleParam === 'organizer' ? 'organizer' : 'user'
-  )
-  // Adjust-during-render latch (guarded, so it can't loop).
-  if (roleParam === 'organizer' && role !== 'organizer') {
-    setLatchedRole('organizer')
-  }
   const [error, setError] = useState<string | null>(null)
   const [pendingDeletion, setPendingDeletion] = useState(false)
   const [existingAccount, setExistingAccount] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [isPasswordFocused, setIsPasswordFocused] = useState(false)
-  const [acceptedTermsChecked, setAcceptedTerms] = useState(false)
-
-  const selectedRole: 'USER' | 'ORGANIZER' = role === 'organizer' ? 'ORGANIZER' : 'USER'
-  // Minimum age differs by role: attendees 13+, organizers 18+.
-  const minAge = role === 'organizer' ? 18 : 13
-  // Users consent implicitly by continuing (clickwrap — the notice sits by the
-  // buttons); organizers must tick the explicit checkbox.
-  const acceptedTerms = role === 'organizer' ? acceptedTermsChecked : true
+  // Consent is implicit by continuing (clickwrap — the notice sits by the
+  // buttons). Organizers sign up on organizer.baatasari.com.
+  const acceptedTerms = true
 
   const handleRegister = async () => {
     if (!email || !password || !confirm) {
@@ -537,29 +503,23 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
       return
     }
 
-    if (!acceptedTerms) {
-      setError('Please accept the Terms & Privacy Policy to continue.')
-      return
-    }
-
     setLoading(true)
     setError(null)
     setExistingAccount(false)
     setIsAuthenticating(true)
-    logAuth('register:submit', { email: normalizedEmail, role: selectedRole })
+    logAuth('register:submit', { email: normalizedEmail })
 
     try {
       await register({
         email: normalizedEmail,
         password,
-        role: selectedRole,
         acceptedTerms: true,
       })
       closeModal()
       router.replace(resolveAuthDestination(searchParams))
     } catch (authError) {
       const message = authError instanceof Error ? authError.message : 'Unable to create account.'
-      logAuthError('register:error', { message, role: selectedRole })
+      logAuthError('register:error', { message })
       setError(message)
       setPendingDeletion(isPendingDeletionError(authError))
       setExistingAccount(isEmailExistsError(authError))
@@ -572,15 +532,15 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
   const handleGoogle = () => {
     setError(null)
     setGoogleLoading(true)
-    logAuth('register:google:redirect-start', { role: selectedRole })
+    logAuth('register:google:redirect-start')
 
     try {
       const redirectPath = resolveAuthDestination(searchParams)
-      const googleUrl = resolveGoogleOAuthRedirectUrl(selectedRole, redirectPath)
+      const googleUrl = resolveGoogleOAuthRedirectUrl(redirectPath)
       window.location.assign(googleUrl)
     } catch (authError) {
       const message = authError instanceof Error ? authError.message : 'Google sign-in failed. Please try again.'
-      logAuthError('register:google:redirect-error', { message, role: selectedRole })
+      logAuthError('register:google:redirect-error', { message })
       setError(message)
       setGoogleLoading(false)
     }
@@ -600,18 +560,8 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
   return (
     <div className="space-y-6">
       <div className="space-y-2 text-center">
-        {role === 'organizer' && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-900/5 px-3 py-1 text-xs font-semibold text-brand-800">
-            <CalendarPlus className="h-3.5 w-3.5" />
-            Event organizer
-          </span>
-        )}
-        <h2 className="text-2xl font-semibold text-slate-900">
-          {role === 'organizer' ? 'Create your organizer account' : 'Create your account'}
-        </h2>
-        <p className="text-sm text-slate-500">
-          {role === 'organizer' ? 'Start hosting events on Baatasari' : 'Get started in seconds'}
-        </p>
+        <h2 className="text-2xl font-semibold text-slate-900">Create your account</h2>
+        <p className="text-sm text-slate-500">Get started in seconds</p>
       </div>
 
       <div className="space-y-4">
@@ -689,28 +639,6 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
         />
       </div>
 
-      {role === 'organizer' && (
-        <label className="flex items-start gap-2 text-xs text-slate-600">
-          <input
-            type="checkbox"
-            checked={acceptedTermsChecked}
-            onChange={(e) => setAcceptedTerms(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-slate-300"
-          />
-          <span>
-            I am <strong>{minAge} years or older</strong> and agree to the{" "}
-            <a href="/terms-and-conditions" target="_blank" className="font-semibold text-brand-700 underline">
-              Terms &amp; Conditions
-            </a>{" "}
-            and{" "}
-            <a href="/privacy-policy" target="_blank" className="font-semibold text-brand-700 underline">
-              Privacy Policy
-            </a>
-            .
-          </span>
-        </label>
-      )}
-
       {error && (
         pendingDeletion ? (
           <PendingDeletionBanner message={error} />
@@ -757,8 +685,7 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
       </button>
 
       <div className="space-y-2 text-center text-sm text-slate-500">
-        {role === 'user' && (
-          <p className="text-xs">
+        <p className="text-xs">
             By continuing, you agree to our{' '}
             <a href="/terms-and-conditions" target="_blank" className="font-semibold text-brand-800 underline-offset-2 hover:underline">
               Terms &amp; Conditions
@@ -768,7 +695,6 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
               Privacy Policy
             </a>
           </p>
-        )}
       </div>
     </div>
   )
