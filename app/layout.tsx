@@ -1,7 +1,7 @@
 import './globals.css'
 import Providers from './providers'
 import SiteShell from '../components/site-shell'
-import { Bricolage_Grotesque, Albert_Sans, Poppins } from 'next/font/google'
+import localFont from 'next/font/local'
 import { SITE_NAME, SITE_ORIGIN, organizationJsonLd, webSiteJsonLd } from '@/lib/seo'
 
 // Brand typefaces. These were referenced everywhere (`font-bricolage`,
@@ -14,28 +14,33 @@ import { SITE_NAME, SITE_ORIGIN, organizationJsonLd, webSiteJsonLd } from '@/lib
 // no class, no var() reference — so five families' worth of font files were
 // being preloaded on every page to render nothing. Anything added back here
 // must have a real consumer; each family costs a render-blocking preload.
-const bricolage = Bricolage_Grotesque({
-  subsets: ['latin'],
-  // 800 was loaded and never asked for — `font-extrabold` appears nowhere in
-  // the codebase, and no inline style requests it. Keep this list matched to
-  // the weights actually used: an unused weight is a whole extra file on every
-  // page, and a MISSING one is worse, since the browser silently synthesises a
-  // fake face instead of failing.
-  weight: ['400', '500', '600', '700'],
+//
+// Self-hosted (app/fonts/, from Fontsource — the same files Google Fonts
+// serves) rather than next/font/google: the Google variant downloads the fonts
+// during every build, and a bad response from Google failed a Cloudflare
+// deploy on 2026-10-01. Bricolage Grotesque and Albert Sans are variable
+// fonts — one file covers every weight, so no weight list to keep in step.
+const bricolage = localFont({
+  src: './fonts/BricolageGrotesque-latin-wght.woff2',
+  weight: '200 800',
   variable: '--font-bricolage',
   display: 'swap',
 })
 
-const albert = Albert_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+const albert = localFont({
+  src: './fonts/AlbertSans-latin-wght.woff2',
+  weight: '100 900',
   variable: '--font-albert',
   display: 'swap',
 })
 
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+const poppins = localFont({
+  src: [
+    { path: './fonts/Poppins-latin-400.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/Poppins-latin-500.woff2', weight: '500', style: 'normal' },
+    { path: './fonts/Poppins-latin-600.woff2', weight: '600', style: 'normal' },
+    { path: './fonts/Poppins-latin-700.woff2', weight: '700', style: 'normal' },
+  ],
   variable: '--font-poppins',
   display: 'swap',
 })
