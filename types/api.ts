@@ -411,6 +411,14 @@ export type TalentProfile = {
   location: string | null;
   expectedPriceBand: string | null;
   portfolioLinks: string[];
+  // Talent directory (2026-10-01).
+  videoLinks: string[];
+  contactPhone: string | null;
+  photoUrl: string | null;
+  slug: string | null;
+  isListed: boolean;
+  hiddenAt: string | null;
+  hiddenReason: string | null;
   feeAmount: number;
   paymentStatus: string;
   providerOrderId: string | null;

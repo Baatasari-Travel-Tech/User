@@ -51,7 +51,7 @@ function UserMenu({
   showLogout?: boolean
   onLogout?: () => Promise<void>
 }) {
-  const { profile, user } = useAuth()
+  const { profile, user, talentProfile } = useAuth()
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null)
@@ -174,12 +174,12 @@ function UserMenu({
             <div className="my-1 h-px bg-slate-100" />
 
             <Link
-              href="/talent"
+              href={talentProfile?.paymentStatus === "PAID" ? "/talent/dashboard" : "/talent"}
               className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               onClick={() => setOpen(false)}
             >
               <Sparkles className="h-4 w-4 text-slate-500" />
-              Talent
+              {talentProfile?.paymentStatus === "PAID" ? "Talent dashboard" : "Talent"}
             </Link>
 
             {showLogout && onLogout ? (

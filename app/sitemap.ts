@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next"
 import { PUBLIC_ROUTES, SITE_ORIGIN } from "@/lib/seo"
 import type { EventSummary } from "@/types/api"
+import { fetchTalentList, type PublicTalent } from "@/lib/talent"
 
 // Regenerate hourly. Events are published continuously, so a build-time-only
 // sitemap would go stale between deploys — which is exactly the state that
@@ -68,5 +69,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     })
 
-  return [...staticEntries, ...eventEntries]
+  // Listed performers' public profiles (/talent/p/[slug]).
+  const talent: PublicTalent[] = []
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const batch = await fetchTalentList({ page })
+    if (!batch) break
+    talent.push(...batch.items)
+    if (page >= batch.totalPages) break
+  }
+  const talentEntries: MetadataRoute.Sitemap = talent.map((t) => ({
+    url: `${SITE_ORIGIN}/talent/p/${t.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.5,
+  }))
+
+  return [...staticEntries, ...eventEntries, ...talentEntries]
 }

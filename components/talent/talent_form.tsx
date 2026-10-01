@@ -3,11 +3,12 @@
 import {
   ArrowRight,
   Handshake,
-  Lock,
+  PlayCircle,
   ShieldCheck,
   Sparkles,
   Tag,
 } from "lucide-react"
+import { useAuth } from "@/app/providers"
 import Link from "next/link"
 import Image from "next/image"
 import { motion, type Variants } from "framer-motion"
@@ -16,7 +17,7 @@ const FEATURES = [
   { icon: Tag, title: "₹299 Lifetime", description: "One payment, once. No subscription, nothing to renew, nothing that lapses." },
   { icon: Handshake, title: "Direct Connections", description: "Connect directly with verified businesses and organizers." },
   { icon: ShieldCheck, title: "Verified Businesses", description: "Every business is verified for your safety and trust." },
-  { icon: Lock, title: "Secure Payments", description: "Get paid securely with clear transactions and reports." },
+  { icon: PlayCircle, title: "Your Own Page", description: "A shareable profile with your photo, videos and rates." },
 ] as const
 
 const container: Variants = {
@@ -28,7 +29,21 @@ const item: Variants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
 }
 
+/** Where "Register as Talent" goes: a paid performer to their dashboard, a
+ *  signed-in account straight to talent onboarding, and anyone else to the
+ *  sign-in / sign-up modal first — which then lands on talent onboarding
+ *  (it collects the account details too, so no separate /onboarding). */
+function useRegisterHref() {
+  const { session, talentProfile } = useAuth()
+  if (talentProfile?.paymentStatus === "PAID") return "/talent/dashboard"
+  if (session?.user) return "/talent/onboarding"
+  return `/talent?auth=register&redirect=${encodeURIComponent("/talent/onboarding")}`
+}
+
 export function TalentInformationForm() {
+  const registerHref = useRegisterHref()
+  const { talentProfile } = useAuth()
+  const isTalent = talentProfile?.paymentStatus === "PAID"
   return (
     <section className="relative isolate flex min-h-[calc(100dvh-72px)] w-full flex-col md:h-[calc(100dvh-72px)] md:overflow-hidden">
       {/* Background image */}
@@ -81,13 +96,20 @@ export function TalentInformationForm() {
             brands across Vizag. Share your talent. Get discovered. Get booked.
           </motion.p>
 
-          <motion.div variants={item} className="mt-6 sm:mt-9">
+          <motion.div variants={item} className="mt-6 flex flex-wrap items-center gap-3 sm:mt-9">
             <Link
-              href="/talent/onboarding"
+              href={registerHref}
+              scroll={false}
               className="group inline-flex h-14 items-center justify-center gap-3 rounded-full bg-(--brand-navy) px-8 font-poppins text-base font-semibold text-white shadow-lg shadow-(--brand-navy)/25 transition-all hover:scale-[1.03] hover:bg-(--brand-navy)/90"
             >
-              Register as Talent
+              {isTalent ? "Go to your dashboard" : "Register as Talent"}
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </Link>
+            <Link
+              href="/talent/browse"
+              className="inline-flex h-14 items-center justify-center rounded-full border border-(--brand-navy)/20 bg-white/70 px-7 font-poppins text-base font-semibold text-(--brand-navy) backdrop-blur-sm transition hover:border-(--brand-navy)/40"
+            >
+              Browse talent
             </Link>
           </motion.div>
         </motion.div>

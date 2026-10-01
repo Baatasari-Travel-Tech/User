@@ -62,6 +62,7 @@ export const PUBLIC_ROUTES: Array<{ path: string; priority: number; changeFreque
   { path: "/events", priority: 0.9, changeFrequency: "daily" },
   { path: "/for-organizers", priority: 0.7, changeFrequency: "monthly" },
   { path: "/talent", priority: 0.6, changeFrequency: "monthly" },
+  { path: "/talent/browse", priority: 0.6, changeFrequency: "daily" },
   { path: "/contact-us", priority: 0.4, changeFrequency: "yearly" },
   { path: "/privacy-policy", priority: 0.2, changeFrequency: "yearly" },
   { path: "/terms-and-conditions", priority: 0.2, changeFrequency: "yearly" },
