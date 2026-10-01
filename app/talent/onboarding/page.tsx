@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { z } from "zod"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   ArrowRight,
@@ -220,9 +220,12 @@ export default function TalentOnboardingPage() {
   }, [talentProfile])
 
   const errors = form.formState.errors
-  const bio = form.watch("bio") ?? ""
-  const slots = (form.watch("preferredSlots") ?? "").split(",").map((s) => s.trim()).filter(Boolean)
-  const work = (form.watch("availableFor") ?? "").split(",").map((s) => s.trim()).filter(Boolean)
+  // useWatch, not form.watch(): the React Compiler can't optimise a component
+  // that calls watch() during render.
+  const bio = useWatch({ control: form.control, name: "bio" }) ?? ""
+  const slots = (useWatch({ control: form.control, name: "preferredSlots" }) ?? "").split(",").map((s) => s.trim()).filter(Boolean)
+  const expectedPriceBand = useWatch({ control: form.control, name: "expectedPriceBand" })
+  const work = (useWatch({ control: form.control, name: "availableFor" }) ?? "").split(",").map((s) => s.trim()).filter(Boolean)
 
   const toggleList = (field: "preferredSlots" | "availableFor", value: string) => {
     const current = field === "preferredSlots" ? slots : work
@@ -540,7 +543,7 @@ export default function TalentOnboardingPage() {
                           inputMode="numeric"
                           className={`${inputClass} mt-0 pl-8`}
                           placeholder="Enter starting price"
-                          value={form.watch("expectedPriceBand")}
+                          value={expectedPriceBand}
                           onChange={(e) =>
                             form.setValue("expectedPriceBand", e.target.value.replace(/\D/g, ""), {
                               shouldValidate: true,

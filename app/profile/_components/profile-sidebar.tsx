@@ -133,6 +133,7 @@ export function ProfileSidebar({
             disabled={avatarUploading}
             className="group relative h-16 w-16 shrink-0 cursor-pointer overflow-hidden rounded-2xl border-4 border-white bg-slate-100 shadow-md transition hover:ring-2 hover:ring-(--brand-blue)/40 disabled:cursor-wait"
           >
+            {/* eslint-disable-next-line @next/next/no-img-element -- a blob: preview of the photo just picked */}
             <img
               src={avatarPreview || DEFAULT_AVATAR_IMAGE}
               alt="Profile preview"

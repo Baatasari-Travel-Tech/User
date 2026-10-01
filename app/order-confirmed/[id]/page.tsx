@@ -535,6 +535,7 @@ function OrderConfirmedContent() {
                   {orderTickets.length === 1 ? (
                     <div className="shrink-0 rounded-2xl border border-(--gray-200) bg-white p-3 text-center shadow-sm">
                       {qrDataUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- a data: URL QR code drawn in the browser
                         <img src={qrDataUrl} alt="Ticket QR code" width={120} height={120} className="block" />
                       ) : (
                         <div className="h-[120px] w-[120px] animate-pulse rounded-lg bg-slate-100" />
@@ -559,6 +560,7 @@ function OrderConfirmedContent() {
                           className="flex items-center gap-4 rounded-2xl border border-(--gray-200) bg-white p-4 shadow-sm"
                         >
                           {qrMap[pass.ticketId] ? (
+                            // eslint-disable-next-line @next/next/no-img-element -- a data: URL QR code drawn in the browser
                             <img
                               src={qrMap[pass.ticketId]}
                               alt={`QR code for ${pass.tierName ?? "ticket"}`}
