@@ -2,10 +2,12 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { apiRequest } from "@/lib/api/client"
+import { apiRequest, refreshSession } from "@/lib/api/client"
 import {
   broadcastSessionCleared,
+  broadcastSessionStarted,
   onSessionCleared,
+  onSessionStarted,
 } from "@/lib/auth/session-channel"
 import { useAuthStore } from "@/lib/auth/store"
 import { ApiError } from "@/types/api"
@@ -336,9 +338,20 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         me = await fetchMe()
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
-          // Access token expired: refresh directly (no redirect side-effect),
-          // then retry. A failed refresh throws and is handled below as logged-out.
-          await apiRequest("/auth/refresh", { method: "POST", retryOn401: false })
+          // Access token expired: renew directly (no redirect side-effect),
+          // then retry. refreshSession() takes turns with this site's other
+          // tabs — several tabs bootstrapping at once (a restored browser
+          // session) must not each present the same refresh token, which the
+          // backend treats as theft and signs the account out everywhere.
+          // Expired → handled below as logged-out; unavailable (5xx, network)
+          // → left signed in, same as any other transient failure.
+          const outcome = await refreshSession()
+          if (outcome !== "refreshed") {
+            throw new ApiError(outcome === "expired" ? 401 : 503, {
+              code: outcome === "expired" ? "TOKEN_INVALID" : "SERVICE_UNAVAILABLE",
+              message: outcome === "expired" ? "Session expired." : "Couldn't reach Baatasari.",
+            })
+          }
           me = await fetchMe()
         } else {
           throw error
@@ -399,6 +412,65 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     return unsubscribe
   }, [clearSession])
 
+  // And the other direction: tab A signed in. Signed-in-only pages here
+  // already react to the store (ProtectedRoute), so:
+  // - same account already showing: nothing to do;
+  // - a different account showing: reload, so nothing from the previous
+  //   account stays on screen;
+  // - signed out, on a login/register screen: go where signing in from this
+  //   tab would have gone (the form's `?redirect`, else home — which sends a
+  //   signed-in user on to their own home page);
+  // - signed out anywhere else: pick the session up in place (bootstrap).
+  useEffect(() => {
+    const unsubscribe = onSessionStarted((userId) => {
+      const current = useAuthStore.getState().user
+      if (current?.id === userId) return
+      if (current) {
+        window.location.reload()
+        return
+      }
+      const { pathname, search } = window.location
+      const params = new URLSearchParams(search)
+      if (pathname === "/login" || pathname === "/register" || params.has("auth")) {
+        const redirect = params.get("redirect")
+        window.location.replace(redirect && redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/")
+        return
+      }
+      void bootstrap()
+    })
+    return unsubscribe
+  }, [bootstrap])
+
+  // One signed-in device per account: signing in on another device ends this
+  // one's session on the backend at once, but an idle tab only finds out on
+  // its next request. So whenever the person comes back to a signed-in tab,
+  // quietly re-check — if the session is gone, the API client's own expired-
+  // session path signs this tab (and its sibling tabs) out. Throttled to once
+  // per 30s so flicking between windows doesn't fire a request each time.
+  useEffect(() => {
+    let lastCheck = 0
+    const recheck = () => {
+      if (document.visibilityState !== "visible" || !useAuthStore.getState().user) return
+      if (Date.now() - lastCheck < 30_000) return
+      lastCheck = Date.now()
+      apiRequest("/auth/me", { auth: true }).catch(() => undefined)
+    }
+    document.addEventListener("visibilitychange", recheck)
+    window.addEventListener("focus", recheck)
+    return () => {
+      document.removeEventListener("visibilitychange", recheck)
+      window.removeEventListener("focus", recheck)
+    }
+  }, [])
+
+  // Every way of signing in on this tab calls this once the session exists, so
+  // the site's other open tabs sign in too. bootstrap()/hydrateForUser() do
+  // NOT broadcast — they only load a session that already exists, and they're
+  // what the other tabs run when they hear this.
+  const announceSignIn = (user: SafeUser) => {
+    broadcastSessionStarted(user.id)
+  }
+
   const login = async (payload: { email: string; password: string }): Promise<LoginResult> => {
     const response = await apiRequest<AuthResponse | LoginChallengeResponse>("/auth/login", {
       method: "POST",
@@ -410,6 +482,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     }
 
     await hydrateForUser(response.data.user)
+    announceSignIn(response.data.user)
     return { requires2FA: false }
   }
 
@@ -420,6 +493,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     })
 
     await hydrateForUser(response.data.user)
+    announceSignIn(response.data.user)
   }
 
   // Lost-authenticator recovery: emails a code that, once confirmed, turns
@@ -439,6 +513,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     })
 
     await hydrateForUser(response.data.user)
+    announceSignIn(response.data.user)
   }
 
   const register = async (payload: { email: string; password: string; role: "USER" | "ORGANIZER"; acceptedTerms: boolean }) => {
@@ -449,6 +524,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
     setActiveRole(payload.role === "ORGANIZER" ? "ORGANIZER" : "USER")
     await hydrateForUser(response.data.user)
+    announceSignIn(response.data.user)
   }
 
   const logout = async () => {
@@ -488,6 +564,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
     setActiveRole(response.data.user.role === "ORGANIZER" ? "ORGANIZER" : "USER")
     await hydrateForUser(response.data.user)
+    announceSignIn(response.data.user)
   }
 
   const switchRole = async (role: AppRole) => {

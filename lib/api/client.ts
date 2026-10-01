@@ -13,8 +13,6 @@ const withPrefix = (path: string) => {
   return `${base}${API_PREFIX}${normalized}`
 }
 
-let refreshPromise: Promise<boolean> | null = null
-
 const redirectToLogin = () => {
   if (typeof window !== "undefined" && window.location.pathname !== "/login") {
     window.location.href = "/login"
@@ -32,29 +30,101 @@ const tryParseJson = async (response: Response) => {
   }
 }
 
-const refreshAccessToken = async () => {
-  if (!refreshPromise) {
-    refreshPromise = fetch(withPrefix("/auth/refresh"), {
+/**
+ * Renewing the session rotates the refresh token: the backend deletes the one
+ * presented, issues a new one, and treats any later use of the old one as a
+ * stolen token — it signs the account out on every device. The cookies are
+ * shared by every open tab of this site, so two tabs renewing at the same
+ * moment (a browser restoring several tabs, or two tabs waking up after the
+ * 15-minute access token lapsed) would trip exactly that.
+ *
+ * So renewals take turns across tabs (Web Locks API), and a tab that waited
+ * while another tab renewed reuses that fresh session instead of presenting
+ * the token that was just replaced. Each renewal also restarts the backend's
+ * inactivity window (REFRESH_TOKEN_EXPIRY), which is what keeps an
+ * occasionally-used session alive.
+ *
+ * Only a 401 means the session is over. A 5xx, a rate limit or no network is
+ * "unavailable" — the session is left alone and the request fails with a
+ * retryable error, rather than signing someone out over a server hiccup.
+ * Same code as Venue's and Organizer's lib/api/client.ts.
+ */
+export type RefreshOutcome = "refreshed" | "expired" | "unavailable"
+
+const REFRESH_LOCK = "baatasari-refresh-user"
+const LAST_REFRESH_KEY = "baatasari-last-refresh-user"
+// Comfortably longer than one renewal round-trip, far shorter than the
+// 15-minute access token a renewal produces.
+const RECENT_REFRESH_MS = 10_000
+
+const readLastRefresh = (): number => {
+  try {
+    return Number(window.localStorage.getItem(LAST_REFRESH_KEY)) || 0
+  } catch {
+    return 0
+  }
+}
+
+const writeLastRefresh = (): void => {
+  try {
+    window.localStorage.setItem(LAST_REFRESH_KEY, String(Date.now()))
+  } catch {
+    // Private mode / storage disabled — the lock alone still serialises.
+  }
+}
+
+const renewSession = async (): Promise<RefreshOutcome> => {
+  if (Date.now() - readLastRefresh() < RECENT_REFRESH_MS) return "refreshed"
+
+  let response: Response
+  try {
+    response = await fetch(withPrefix("/auth/refresh"), {
       method: "POST",
       credentials: "include"
     })
-      .then(async (response) => {
-        if (!response.ok) {
-          useAuthStore.getState().clearSession()
-          // Tell sibling tabs to clear too — otherwise tab B continues
-          // showing the user as "signed in" until its next API call.
-          broadcastSessionCleared("refresh_failed")
-          redirectToLogin()
-          return false
-        }
-        return true
-      })
-      .finally(() => {
-        refreshPromise = null
-      })
+  } catch {
+    return "unavailable"
   }
 
+  if (response.ok) {
+    writeLastRefresh()
+    return "refreshed"
+  }
+  return response.status === 401 ? "expired" : "unavailable"
+}
+
+let refreshPromise: Promise<RefreshOutcome> | null = null
+
+/**
+ * Renews the session with no side effects — callers decide what an expired
+ * session means for them (app/providers.tsx's bootstrap treats it as a quiet
+ * "not signed in"). Shared by every caller in this tab (one request in flight
+ * at a time) and by every tab of this site (one renewal at a time).
+ */
+export const refreshSession = (): Promise<RefreshOutcome> => {
+  if (!refreshPromise) {
+    const locks = typeof navigator !== "undefined" ? navigator.locks : undefined
+    // Awaited inside an async function: the lock API types its result as a
+    // nested promise, which await flattens.
+    const run = async (): Promise<RefreshOutcome> =>
+      locks ? await locks.request(REFRESH_LOCK, renewSession) : renewSession()
+    refreshPromise = run().finally(() => {
+      refreshPromise = null
+    })
+  }
   return refreshPromise
+}
+
+const refreshAccessToken = async (): Promise<RefreshOutcome> => {
+  const outcome = await refreshSession()
+  if (outcome === "expired") {
+    useAuthStore.getState().clearSession()
+    // Tell sibling tabs to clear too — otherwise tab B continues
+    // showing the user as "signed in" until its next API call.
+    broadcastSessionCleared("refresh_failed")
+    redirectToLogin()
+  }
+  return outcome
 }
 
 type RequestOptions = RequestInit & {
@@ -111,11 +181,17 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   let response = await makeRequest()
 
   if (response.status === 401 && retryOn401) {
-    const refreshed = await refreshAccessToken()
-    if (!refreshed) {
+    const outcome = await refreshAccessToken()
+    if (outcome === "expired") {
       throw new ApiError(401, {
         code: "TOKEN_INVALID",
         message: "Session expired. Please log in again."
+      })
+    }
+    if (outcome === "unavailable") {
+      throw new ApiError(503, {
+        code: "SERVICE_UNAVAILABLE",
+        message: "Couldn't reach Baatasari. Check your connection and try again."
       })
     }
     response = await makeRequest()

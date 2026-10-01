@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/app/providers'
 import LoadingScreen from '@/components/loading-screen'
+import { broadcastSessionStarted } from '@/lib/auth/session-channel'
 
 const normalizeRedirectPath = (value: string | null) => {
   if (!value || !value.startsWith('/')) return '/'
@@ -45,6 +46,9 @@ export default function AuthCallback() {
     if (isLoading) return
 
     if (user) {
+      // Google sign-in lands here on a fresh page load, so this is where it
+      // tells the site's other open tabs (lib/auth/session-channel.ts).
+      broadcastSessionStarted(user.id)
       router.replace(redirectPath)
       return
     }
