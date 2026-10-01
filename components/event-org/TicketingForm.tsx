@@ -123,12 +123,14 @@ function PriceSummaryTable({ price, gatewayBearer, onGatewayBearerToggle }: {
   onGatewayBearerToggle: () => void
 }) {
   const PLATFORM_FEE = 10
-  const RAZORPAY_RATE = 0.02 * 1.18
+  // Mirrors the backend's GATEWAY_RATE (Cashfree 2.31% + 18% GST) — this table
+  // is only a preview; the backend computes what is actually charged.
+  const GATEWAY_RATE = 0.0231 * 1.18
   const net = price + PLATFORM_FEE
-  const gatewayFee = price > 0 ? Number((net * RAZORPAY_RATE / (1 - RAZORPAY_RATE)).toFixed(2)) : 0
+  const gatewayFee = price > 0 ? Number((net * GATEWAY_RATE / (1 - GATEWAY_RATE)).toFixed(2)) : 0
 
   const customerPays = net + (gatewayBearer === "customer" ? gatewayFee : 0)
-  const organizerGets = price - (gatewayBearer === "organizer" ? Number((net * RAZORPAY_RATE).toFixed(2)) : 0)
+  const organizerGets = price - (gatewayBearer === "organizer" ? Number((net * GATEWAY_RATE).toFixed(2)) : 0)
   const totalCharges = PLATFORM_FEE + gatewayFee
 
   return (
@@ -142,7 +144,7 @@ function PriceSummaryTable({ price, gatewayBearer, onGatewayBearerToggle }: {
             <td className="py-2 text-right text-slate-500">Organizer</td>
           </tr>
           <tr className="border-b border-(--gold-bar-border)">
-            <td className="py-2 text-slate-600">Payment Gateway Fee <span className="text-slate-400">(2% + 18% GST)</span></td>
+            <td className="py-2 text-slate-600">Payment Gateway Fee <span className="text-slate-400">(2.31% + 18% GST)</span></td>
             <td className="py-2 text-center font-medium text-slate-800">
               {price > 0 ? `₹${gatewayFee.toFixed(2)}` : "—"}
             </td>

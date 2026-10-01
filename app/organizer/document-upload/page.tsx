@@ -651,8 +651,8 @@ export default function OrganizerDocumentUploadPage() {
 
         <p style={agSectionTitle}>5. Consideration &amp; Payment Terms</p>
         <p style={agPara}>5.1 Baatasari will charge a Platform Fee of ₹10 (Rupees Ten) per ticket (or as mutually agreed) + applicable taxes.</p>
-        <p style={agPara}>5.2 Payment Gateway fees (Razorpay) shall be charged as per actuals and may be absorbed by Organizer or passed to Customer as selected during event creation.</p>
-        <p style={agPara}>5.3 Baatasari shall release the Organizer&rsquo;s share after deduction of Platform Fee, PG Fee, TCS (if applicable), and any other charges, within T+7 days after the Event (subject to Razorpay settlement policy).</p>
+        <p style={agPara}>5.2 Payment Gateway fees (Cashfree) shall be charged as per actuals and may be absorbed by Organizer or passed to Customer as selected during event creation.</p>
+        <p style={agPara}>5.3 Baatasari shall release the Organizer&rsquo;s share after deduction of Platform Fee, PG Fee, TCS (if applicable), and any other charges, within T+7 days after the Event (subject to Cashfree settlement policy).</p>
         <p style={agPara}>5.4 In case of cancellations or refunds, the Organizer shall reimburse Baatasari immediately for any amounts already settled.</p>
         <p style={agPara}>5.5 Baatasari shall raise an invoice for its Platform Fees.</p>
 

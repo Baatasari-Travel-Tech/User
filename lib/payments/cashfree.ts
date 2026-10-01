@@ -1,7 +1,7 @@
 "use client"
 
-// Cashfree v3 web SDK, loaded from their CDN (same pattern as the Razorpay
-// loader — no npm dependency, no bundle weight, works on the Cloudflare
+// Cashfree v3 web SDK, loaded from their CDN (a script tag, not an npm
+// dependency — no bundle weight, and it works on the Cloudflare
 // Workers runtime).
 
 type CashfreeCheckoutResult = {

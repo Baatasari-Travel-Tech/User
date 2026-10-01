@@ -27,7 +27,6 @@ import {
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { useAuth } from "@/app/providers"
 import { apiRequest } from "@/lib/api/client"
-import { loadRazorpayScript } from "@/lib/payments/razorpay"
 import { loadCashfree } from "@/lib/payments/cashfree"
 
 const schema = z.object({
@@ -48,8 +47,7 @@ const schema = z.object({
 type Values = z.infer<typeof schema>
 
 type TalentOrderResponse = {
-  provider: "razorpay" | "cashfree"
-  providerKeyId: string
+  provider: "cashfree"
   providerOrderId: string
   paymentSessionId: string
   mode?: "sandbox" | "production"
@@ -244,7 +242,7 @@ export default function TalentOnboardingPage() {
         .map((item) => item?.trim())
         .filter((item): item is string => Boolean(item))
 
-      const finish = async (extra: Record<string, unknown>) => {
+      const finish = async () => {
         // Same gateway-round-trip-plus-DB-transaction shape as checkout's
         // /payments/verify — give it real room past the client's default 12s.
         await apiRequest("/talent/onboarding/complete", {
@@ -263,7 +261,6 @@ export default function TalentOnboardingPage() {
             location: values.location,
             expectedPriceBand: values.expectedPriceBand,
             portfolioLinks,
-            ...extra,
           }),
         })
         // ProtectedRoute gates /talent/dashboard on the cached talentProfile's
@@ -281,48 +278,16 @@ export default function TalentOnboardingPage() {
       )
       const order = orderResponse.data.order
 
-      if (order.provider === "cashfree") {
-        const cashfree = await loadCashfree(order.mode ?? "sandbox")
-        const result = await cashfree.checkout({
-          paymentSessionId: order.paymentSessionId,
-          redirectTarget: "_modal",
-        })
-        if (result?.error && !result?.paymentDetails && !result?.redirect) {
-          setError(result.error.message || "Your payment didn't go through. You can try again.")
-          return
-        }
-        await finish({})
+      const cashfree = await loadCashfree(order.mode ?? "sandbox")
+      const result = await cashfree.checkout({
+        paymentSessionId: order.paymentSessionId,
+        redirectTarget: "_modal",
+      })
+      if (result?.error && !result?.paymentDetails && !result?.redirect) {
+        setError(result.error.message || "Your payment didn't go through. You can try again.")
         return
       }
-
-      await loadRazorpayScript()
-      const Razorpay = window.Razorpay
-      if (!Razorpay) {
-        throw new Error("Razorpay failed to load. Please try again.")
-      }
-
-      const razorpay = new Razorpay({
-        key: order.providerKeyId,
-        amount: order.amount * 100,
-        currency: order.currency,
-        name: "Baatasari Talent",
-        description: "Talent onboarding fee",
-        order_id: order.providerOrderId,
-        theme: { color: "#0c1d37" },
-        handler: async (payment: {
-          razorpay_order_id: string
-          razorpay_payment_id: string
-          razorpay_signature: string
-        }) => {
-          await finish({
-            razorpayOrderId: payment.razorpay_order_id,
-            razorpayPaymentId: payment.razorpay_payment_id,
-            razorpaySignature: payment.razorpay_signature,
-          })
-        },
-      })
-
-      razorpay.open()
+      await finish()
     } catch (submitError) {
       setError(
         submitError instanceof Error

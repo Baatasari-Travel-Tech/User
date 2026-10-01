@@ -26,7 +26,6 @@ import { useAuthModal } from "@/components/auth/auth-modal-context"
 import { apiRequest } from "@/lib/api/client"
 import { getEventCoverImageUrl } from "@/lib/event-cover"
 import { formatCurrency, formatDate } from "@/lib/format"
-import { loadRazorpayScript } from "@/lib/payments/razorpay"
 import { loadCashfree } from "@/lib/payments/cashfree"
 import type { ApiEnvelope, ApiError, EventDetail } from "@/types/api"
 import { Button } from "@/components/ui/button"
@@ -63,9 +62,8 @@ type CheckoutFormValues = z.infer<typeof checkoutSchema>
 type CreateOrderResponse = {
   orderId: string
   orderNumber: string
-  provider: "razorpay" | "cashfree"
+  provider: "cashfree"
   providerOrderId: string
-  providerKeyId: string
   paymentSessionId: string
   mode?: "sandbox" | "production"
   eventId: string
@@ -137,32 +135,23 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [checkoutSuccess, setCheckoutSuccess] = useState<string | null>(null)
-  // Distinct from checkoutLoading: true only for the gap between Razorpay
-  // reporting a successful charge and our own /verify call finishing. That
-  // window used to render nothing at all — the Razorpay modal had already
+  // Distinct from checkoutLoading: true only for the gap between the gateway
+  // reporting a completed payment and our own /verify call finishing. That
+  // window used to render nothing at all — the payment modal had already
   // closed and the page just sat there until the redirect.
   const [verifyingPayment, setVerifyingPayment] = useState(false)
-  // True for as long as the gateway's own payment widget is up — both
-  // providers clear checkoutLoading right as their modal opens (so the
+  // True for as long as the gateway's own payment widget is up — the flow
+  // clears checkoutLoading right as their modal opens (so the
   // button doesn't show its own "Processing..." spinner fighting for
   // attention with the gateway's overlay), which re-enabled "Pay Now"
   // underneath that overlay for the whole time it was open. Tracked
   // separately so the button can stay genuinely disabled during that window
   // without also showing a redundant spinner.
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
-  // Set by the payment.failed listener, read by ondismiss — Razorpay fires
-  // both for a genuine decline (the modal stays open for retry, but a
-  // subsequent manual close should explain what happened rather than
-  // silently resetting to an idle "Pay Now" button). A ref, not state, is
-  // deliberate: both callbacks are created once per Razorpay instance and
-  // fire from the SDK's own event loop outside React's render cycle, so a
-  // state value captured in that closure would be stale by the time
-  // ondismiss reads it — the ref always reads the latest write.
-  const lastFailureReasonRef = useRef<string | null>(null)
   // Idempotency key for order creation; reused across retries of the same
   // tier/quantity selection so a resubmit doesn't create a duplicate order.
   const idempotencyRef = useRef<{ sig: string; key: string } | null>(null)
-  // The submit button sits far below the fold on a long page — a Razorpay
+  // The submit button sits far below the fold on a long page — a payment
   // failure/dismiss can fire after the buyer has scrolled away (e.g. while
   // the payment iframe was open), so the error needs to bring itself into
   // view rather than rely on the buyer noticing it appeared.
@@ -325,9 +314,9 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
     [gatewayFee, platformFee, subtotal]
   )
 
-  /* eslint-disable react-hooks/refs -- idempotencyRef/lastFailureReasonRef below
-     are read/written only inside async event callbacks (form submit, Razorpay
-     SDK events) that run after user interaction, never during render. */
+  /* eslint-disable react-hooks/refs -- idempotencyRef below is read/written
+     only inside the async form-submit callback, which runs after user
+     interaction, never during render. */
   const onSubmit = handleSubmit(async (values) => {
     if (!isLoggedIn) {
       setCheckoutError("Please login to continue.")
@@ -346,7 +335,7 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
 
     try {
       // Idempotency: reuse one key across retries of the SAME selection (e.g.
-      // user dismisses the Razorpay modal and resubmits) so the backend returns
+      // user dismisses the payment modal and resubmits) so the backend returns
       // the original order instead of creating a duplicate. Changing any line
       // rotates the key so a genuinely different order is created.
       const selectionSig = lines.map((l) => `${l.tier.id}:${l.qty}`).join("|")
@@ -390,154 +379,56 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
       }
 
       // ── Cashfree ──────────────────────────────────────────────────────
-      if (order.provider === "cashfree") {
-        setCheckoutLoading(false)
-        setPaymentModalOpen(true)
-        const cashfree = await loadCashfree(order.mode ?? "sandbox")
-        const result = await cashfree.checkout({
-          paymentSessionId: order.paymentSessionId,
-          redirectTarget: "_modal",
-        })
-        setPaymentModalOpen(false)
-        // Modal dismissed without completing a payment → let them retry.
-        if (result?.error && !result?.paymentDetails && !result?.redirect) {
-          setCheckoutError(
-            result.error.message || "Your payment didn't go through. You can try again.",
-          )
-          return
-        }
-        // A payment was attempted — our backend confirms it via Get Order.
-        setVerifyingPayment(true)
-        try {
-          // Verification makes a live round-trip to the gateway's "get order"
-          // API plus a DB transaction before responding — routinely slower
-          // than the client's default 12s timeout under any gateway latency.
-          // A timeout here reads as "verification failed," even though the
-          // charge went through and the ticket may already be issued — don't
-          // let a slow-but-successful verify look identical to a real failure.
-          await apiRequest("/payments/verify", {
-            method: "POST",
-            auth: true,
-            body: JSON.stringify({ orderId: order.orderId }),
-            timeoutMs: 30000,
-          })
-          setCheckoutSuccess("Payment verified successfully.")
-          const ticketHref = `/order-confirmed/${order.orderId}`
-          if (user?.onboardingStatus !== "COMPLETED") {
-            router.push(`/onboarding?next=${encodeURIComponent(ticketHref)}`)
-            return
-          }
-          router.push(ticketHref)
-        } catch (verifyError) {
-          setCheckoutError(
-            verifyError instanceof Error
-              ? verifyError.message
-              : "Payment was received but verification failed. Please contact support.",
-          )
-        } finally {
-          setVerifyingPayment(false)
-        }
+      setCheckoutLoading(false)
+      setPaymentModalOpen(true)
+      const cashfree = await loadCashfree(order.mode ?? "sandbox")
+      const result = await cashfree.checkout({
+        paymentSessionId: order.paymentSessionId,
+        redirectTarget: "_modal",
+      })
+      setPaymentModalOpen(false)
+      // Modal dismissed without completing a payment → let them retry.
+      if (result?.error && !result?.paymentDetails && !result?.redirect) {
+        setCheckoutError(
+          result.error.message || "Your payment didn't go through. You can try again.",
+        )
         return
       }
-
-      // ── Razorpay ──────────────────────────────────────────────────────
-      await loadRazorpayScript()
-      const Razorpay = window.Razorpay
-      if (!Razorpay) throw new Error("Razorpay failed to load.")
-
-      const razorpay = new Razorpay({
-        key: order.providerKeyId,
-        amount: Math.round(order.breakdown.totalAmount * 100),
-        currency: order.breakdown.currency,
-        name: "Baatasari",
-        description: event.title,
-        order_id: order.providerOrderId,
-        prefill: {
-          name: values.guestName.trim(),
-          email: values.guestEmail.trim(),
-          contact: values.guestPhone.trim(),
-        },
-        theme: { color: "#0c1d37" },
-        handler: async (payment: {
-          razorpay_order_id: string
-          razorpay_payment_id: string
-          razorpay_signature: string
-        }) => {
-          lastFailureReasonRef.current = null
-          setCheckoutError(null)
-          setPaymentModalOpen(false)
-          setVerifyingPayment(true)
-          try {
-            // Same slow-verify-looks-like-failure risk as the Cashfree path
-            // above — give the gateway round-trip + DB transaction real room.
-            await apiRequest<{ data: { result: { ticket?: { id?: string } } } }>(
-              "/payments/verify",
-              {
-                method: "POST",
-                auth: true,
-                body: JSON.stringify({
-                  orderId: order.orderId,
-                  razorpayOrderId: payment.razorpay_order_id,
-                  razorpayPaymentId: payment.razorpay_payment_id,
-                  razorpaySignature: payment.razorpay_signature,
-                }),
-                timeoutMs: 30000,
-              }
-            )
-
-            setCheckoutSuccess("Payment verified successfully.")
-            // Route by ORDER id — the confirmation page accepts it and shows
-            // every ticket on the order (one per tier line).
-            const ticketHref = `/order-confirmed/${order.orderId}`
-
-            if (user?.onboardingStatus !== "COMPLETED") {
-              router.push(`/onboarding?next=${encodeURIComponent(ticketHref)}`)
-              return
-            }
-            router.push(ticketHref)
-          } catch (verifyError) {
-            setCheckoutError(
-              verifyError instanceof Error
-                ? verifyError.message
-                : "Payment was received but verification failed. Please contact support."
-            )
-          } finally {
-            setVerifyingPayment(false)
-          }
-        },
-        modal: {
-          // Fires on a genuine cancel (user closed the widget themselves) —
-          // but if a payment.failed just happened, it also fires right
-          // after, since Razorpay leaves the choice of "try again or close"
-          // to the user. Surface what happened instead of silently
-          // resetting to an idle button in that case.
-          ondismiss: () => {
-            setCheckoutLoading(false)
-            setPaymentModalOpen(false)
-            if (lastFailureReasonRef.current) {
-              setCheckoutError(`Your payment didn't go through: ${lastFailureReasonRef.current}. You can try again.`)
-              lastFailureReasonRef.current = null
-            }
-          },
-        },
-      })
-
-      // A declined card / failed UPI / etc. Razorpay keeps its own modal
-      // open so the buyer can retry with another method — we just remember
-      // why, so if they close it instead, ondismiss can explain rather than
-      // going silent. error.description is Razorpay's own human-readable
-      // reason ("Payment declined by bank" etc.); reason is a fallback code.
-      razorpay.on("payment.failed", (response: { error?: { description?: string; reason?: string } }) => {
-        lastFailureReasonRef.current =
-          response.error?.description || response.error?.reason || "the payment was declined"
-      })
-
-      setPaymentModalOpen(true)
-      razorpay.open()
+      // A payment was attempted — our backend confirms it via Get Order.
+      setVerifyingPayment(true)
+      try {
+        // Verification makes a live round-trip to the gateway's "get order"
+        // API plus a DB transaction before responding — routinely slower
+        // than the client's default 12s timeout under any gateway latency.
+        // A timeout here reads as "verification failed," even though the
+        // charge went through and the ticket may already be issued — don't
+        // let a slow-but-successful verify look identical to a real failure.
+        await apiRequest("/payments/verify", {
+          method: "POST",
+          auth: true,
+          body: JSON.stringify({ orderId: order.orderId }),
+          timeoutMs: 30000,
+        })
+        setCheckoutSuccess("Payment verified successfully.")
+        const ticketHref = `/order-confirmed/${order.orderId}`
+        if (user?.onboardingStatus !== "COMPLETED") {
+          router.push(`/onboarding?next=${encodeURIComponent(ticketHref)}`)
+          return
+        }
+        router.push(ticketHref)
+      } catch (verifyError) {
+        setCheckoutError(
+          verifyError instanceof Error
+            ? verifyError.message
+            : "Payment was received but verification failed. Please contact support.",
+        )
+      } finally {
+        setVerifyingPayment(false)
+      }
     } catch (error) {
       // Safety net: an unexpected throw between either setPaymentModalOpen(true)
       // above and its matching clear (e.g. loadCashfree/cashfree.checkout
-      // itself rejecting, or razorpay.open() throwing) would otherwise leave
+      // itself rejecting) would otherwise leave
       // the button disabled forever with no path left to re-enable it.
       setPaymentModalOpen(false)
       if (error && typeof error === "object" && "code" in error) {
