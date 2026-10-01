@@ -2,6 +2,24 @@
 
 import type { FC } from "react";
 
+/**
+ * The full-page "Loading your experience" screen. Same file in all three
+ * frontends (User, Organizer, Venue — copy-pasted, not a shared package, per
+ * THREE-FRONTENDS.md §5), used the same way in each: app/loading.tsx (route
+ * transitions), the Google sign-in return page, and the signed-in-only page
+ * gates while the session is checked. Keep the three copies identical.
+ *
+ * Ring speeds, the reversed middle ring and the dot delays are inline styles
+ * on purpose: they were written as `animation-duration-[3s]`,
+ * `direction-[reverse]` and `[animation-delay:…]` classes, but the first two
+ * don't exist in Tailwind and all three lost to the `animation` shorthand from
+ * `animate-spin`/`animate-dot-bounce` — so every ring spun at the same speed
+ * and the dots never moved. An inline style always wins over a class.
+ * `motion-reduce:animate-none` still turns all of it off.
+ *
+ * Needs `animate-dot-bounce` from globals.css and the brand-900 / brand-700 /
+ * background / foreground colour tokens.
+ */
 export const LoadingScreen: FC = () => {
   return (
     <div
@@ -23,9 +41,18 @@ export const LoadingScreen: FC = () => {
 
         <div className="relative mx-auto w-fit">
           <div className="absolute inset-0 rounded-full bg-brand-900/10 blur-sm animate-pulse" />
-          <div className="relative h-14 w-14 rounded-full border-4 border-transparent border-t-brand-900/80 animate-spin motion-reduce:animate-none animation-duration-[3s]">
-            <div className="absolute inset-0.5 rounded-full border-[3px] border-transparent border-t-brand-700/70 animate-spin motion-reduce:animate-none animation-duration-[2s] direction-[reverse]" />
-            <div className="absolute inset-1.25 rounded-full border-2 border-transparent border-b-brand-900/60 animate-spin motion-reduce:animate-none animation-duration-[1s]" />
+          <div
+            className="relative h-14 w-14 rounded-full border-4 border-transparent border-t-brand-900/80 animate-spin motion-reduce:animate-none"
+            style={{ animationDuration: "3s" }}
+          >
+            <div
+              className="absolute inset-0.5 rounded-full border-[3px] border-transparent border-t-brand-700/70 animate-spin motion-reduce:animate-none"
+              style={{ animationDuration: "2s", animationDirection: "reverse" }}
+            />
+            <div
+              className="absolute inset-1.25 rounded-full border-2 border-transparent border-b-brand-900/60 animate-spin motion-reduce:animate-none"
+              style={{ animationDuration: "1s" }}
+            />
           </div>
         </div>
 
@@ -40,8 +67,14 @@ export const LoadingScreen: FC = () => {
 
         <div className="mt-8 flex items-center justify-center gap-2">
           <div className="h-2 w-2 rounded-full bg-brand-900/30 animate-dot-bounce motion-reduce:animate-none" />
-          <div className="h-2 w-2 rounded-full bg-brand-900/30 animate-dot-bounce motion-reduce:animate-none [animation-delay:0.2s]" />
-          <div className="h-2 w-2 rounded-full bg-brand-900/30 animate-dot-bounce motion-reduce:animate-none [animation-delay:0.4s]" />
+          <div
+            className="h-2 w-2 rounded-full bg-brand-900/30 animate-dot-bounce motion-reduce:animate-none"
+            style={{ animationDelay: "0.2s" }}
+          />
+          <div
+            className="h-2 w-2 rounded-full bg-brand-900/30 animate-dot-bounce motion-reduce:animate-none"
+            style={{ animationDelay: "0.4s" }}
+          />
         </div>
       </div>
     </div>

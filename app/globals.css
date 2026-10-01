@@ -725,3 +725,22 @@
 .chart-tooltip-value {
   @apply text-lg font-bold text-gray-900;
 }
+
+/* The three bouncing dots on components/loading-screen.tsx — that file is
+   identical in all three frontends, and so is this block. */
+@theme {
+  --animate-dot-bounce: dot-bounce 1.2s ease-in-out infinite;
+
+  @keyframes dot-bounce {
+    0%,
+    80%,
+    100% {
+      transform: translateY(0);
+      opacity: 0.4;
+    }
+    40% {
+      transform: translateY(-6px);
+      opacity: 1;
+    }
+  }
+}
