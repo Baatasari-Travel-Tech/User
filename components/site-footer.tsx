@@ -37,6 +37,9 @@ export function SiteFooter() {
               <a className="transition hover:text-white" href="/contact-us">
                 Contact
               </a>
+              <Link className="transition hover:text-white" href="/help">
+                Help
+              </Link>
             </div>
           </div>
 

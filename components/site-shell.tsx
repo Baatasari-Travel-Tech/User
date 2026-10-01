@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { useAuth } from '@/app/providers'
-import {
+import { LifeBuoy,
   CalendarPlus,
   ChevronDown,
   Home,
@@ -180,6 +180,14 @@ function UserMenu({
             >
               <Sparkles className="h-4 w-4 text-slate-500" />
               {talentProfile?.paymentStatus === "PAID" ? "Talent dashboard" : "Talent"}
+            </Link>
+            <Link
+              href="/help"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              onClick={() => setOpen(false)}
+            >
+              <LifeBuoy className="h-4 w-4 text-slate-500" />
+              Help &amp; support
             </Link>
 
             {showLogout && onLogout ? (
