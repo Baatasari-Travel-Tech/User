@@ -1,5 +1,7 @@
 # Baatasari — User
 
+> **What's new (2026-10-03).** Help (email on top, tickets, FAQs); talent directory `/talent/browse`; header "Get started" opens sign-up directly (organizers and venues have their own sites); terms cite TDS under ITA 2025 s.393.
+
 The ticket-buyer frontend. Public face: **`baatasari.com`**. Repo `User`,
 Cloudflare Worker `user`, local path `D:\Baatasari\User`.
 
