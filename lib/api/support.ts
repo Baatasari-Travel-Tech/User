@@ -9,7 +9,8 @@ export type SupportMessage = {
   email: string
   phone: string
   problem: string
-  status: "OPEN" | "RESOLVED"
+  status: "OPEN" | "ONGOING" | "WAITING_ON_USER" | "CLOSED" | "RESOLVED"
+  category?: string | null
   createdAt: string
   resolvedAt: string | null
   // Present only on the admin list response.
@@ -23,7 +24,12 @@ export const getMyOpenSupportMessage = async (): Promise<SupportMessage | null> 
   return res.data.message
 }
 
-export const sendSupportMessage = async (payload: { phone: string; problem: string }): Promise<SupportMessage> => {
+export const sendSupportMessage = async (payload: {
+  phone: string
+  problem: string
+  category?: string
+  name?: string
+}): Promise<SupportMessage> => {
   const res = await apiRequest<ApiEnvelope<{ message: SupportMessage }>>("/support/messages", {
     method: "POST",
     auth: true,

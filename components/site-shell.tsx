@@ -187,7 +187,7 @@ function UserMenu({
               onClick={() => setOpen(false)}
             >
               <LifeBuoy className="h-4 w-4 text-slate-500" />
-              Help &amp; support
+              Help
             </Link>
 
             {showLogout && onLogout ? (

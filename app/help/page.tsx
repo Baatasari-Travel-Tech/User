@@ -1,12 +1,14 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
 import { PageShell, SectionCard } from "@/components/platform/page-shell"
 import { SiteFooter } from "@/components/site-footer"
 import { RaiseTicket } from "@/components/support/raise-ticket"
 
 /**
- * Help centre — the FAQs for people buying tickets on baatasari.com, then
- * "Raise a ticket" (signed in) or the support email (signed out).
+ * Help — "Raise a ticket" (signed in; the support email when signed out)
+ * beside the FAQs for people buying tickets on baatasari.com. Same layout on
+ * all three sites; only the FAQs and the ticket categories differ.
  *
  * Every answer states how the product works today or points at the policy
  * page that governs it; nothing promises timelines or features that don't
@@ -114,36 +116,52 @@ export default function HelpPage() {
   return (
     <>
       <PageShell
-        eyebrow="Help centre"
+        eyebrow="Help"
         title="How can we help?"
-        description="Answers to the questions we get most. Can't find yours? Raise a ticket below."
+        description="Raise a ticket and our team will get back to you, or find a quick answer in the FAQs."
+        actions={
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to home
+          </Link>
+        }
       >
-        {SECTIONS.map((section) => (
-          <SectionCard key={section.title} title={section.title}>
-            <ul className="divide-y divide-slate-100">
-              {section.faqs.map(({ q, a }) => (
-                <li key={q}>
-                  {/* <details>: opens, closes, takes focus and is announced
-                      correctly with no JavaScript. */}
-                  <details className="group py-1">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-3 text-sm font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">
-                      {q}
-                      <span
-                        aria-hidden
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition group-open:rotate-45"
-                      >
-                        +
-                      </span>
-                    </summary>
-                    <p className="pb-4 text-sm leading-6 text-slate-600">{a}</p>
-                  </details>
-                </li>
+        {/* Ticket on the left, FAQs on the right; stacked on a phone. */}
+        <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+          <RaiseTicket />
+          <SectionCard title="FAQs">
+            <div className="space-y-5">
+              {SECTIONS.map((section) => (
+                <div key={section.title}>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-900">{section.title}</p>
+                  <ul className="mt-1 divide-y divide-slate-200">
+                    {section.faqs.map(({ q, a }) => (
+                      <li key={q}>
+                        {/* <details>: opens, closes, takes focus and is announced
+                            correctly with no JavaScript. */}
+                        <details className="group">
+                          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-3 text-sm font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">
+                            {q}
+                            <span
+                              aria-hidden
+                              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition group-open:rotate-45"
+                            >
+                              +
+                            </span>
+                          </summary>
+                          <p className="pb-4 text-sm leading-6 text-slate-600">{a}</p>
+                        </details>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
           </SectionCard>
-        ))}
-
-        <RaiseTicket />
+        </div>
       </PageShell>
       <SiteFooter />
     </>
