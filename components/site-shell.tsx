@@ -6,8 +6,6 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { useAuth } from '@/app/providers'
 import { LifeBuoy,
-  CalendarPlus,
-  ChevronDown,
   Home,
   LogOut,
   Menu,
@@ -16,12 +14,6 @@ import { LifeBuoy,
   UserRound,
   X,
 } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { DEFAULT_AVATAR_IMAGE } from '@/lib/avatar'
 import { resolveUserHome } from '@/lib/auth/navigation'
 import { AuthModalRoot } from '@/components/auth/auth-modal'
@@ -492,38 +484,15 @@ function SiteShellContent({ children }: { children: React.ReactNode }) {  const
                 >
                   Login
                 </button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center gap-1.5 rounded-full bg-(--brand-navy) px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-(--brand-navy)/90"
-                    >
-                      Get started
-                      <ChevronDown className="h-3.5 w-3.5" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-52">
-                    <DropdownMenuItem
-                      className="cursor-pointer gap-2.5 py-2.5 font-medium"
-                      onClick={() => {
-                        const params = new URLSearchParams(window.location.search)
-                        params.set('auth', 'register')
-                        router.push(`${pathname}?${params.toString()}`)
-                      }}
-                    >
-                      <UserRound className="h-4 w-4 text-slate-500" />
-                      For Users
-                    </DropdownMenuItem>
-                    {/* Organizers sign up on their own site. A plain <a>, as for
-                        the other external links in this header. */}
-                    <DropdownMenuItem asChild className="cursor-pointer gap-2.5 py-2.5 font-medium">
-                      <a href="https://organizer.baatasari.com/register">
-                        <CalendarPlus className="h-4 w-4 text-slate-500" />
-                        For Organizers
-                      </a>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {/* Straight to sign-up. Organizers and venues have their own sites
+                    now, so there is nothing to choose between here. */}
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center rounded-full bg-(--brand-navy) px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-(--brand-navy)/90"
+                  onClick={() => openModal('register')}
+                >
+                  Get started
+                </button>
                 <button
                   type="button"
                   className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50 md:hidden"
