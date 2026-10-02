@@ -1,9 +1,10 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Mail } from "lucide-react"
 import { PageShell, SectionCard } from "@/components/platform/page-shell"
 import { SiteFooter } from "@/components/site-footer"
 import { RaiseTicket } from "@/components/support/raise-ticket"
+import { SOCIAL_LINKS } from "@/components/events/footer-social-edit"
 
 /**
  * Help — "Raise a ticket" (signed in; the support email when signed out)
@@ -162,6 +163,14 @@ export default function HelpPage() {
             </div>
           </SectionCard>
         </div>
+        {/* Email, for everyone — signed in or not. */}
+        <p className="mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-sm text-slate-600">
+          <Mail className="h-4 w-4 text-slate-400" />
+          Prefer email? Write to us at
+          <a href={`mailto:${SOCIAL_LINKS.email}`} className="font-semibold text-brand-900 underline-offset-2 hover:underline">
+            {SOCIAL_LINKS.email}
+          </a>
+        </p>
       </PageShell>
       <SiteFooter />
     </>
