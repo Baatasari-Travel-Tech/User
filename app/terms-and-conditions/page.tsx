@@ -288,8 +288,8 @@ export default function TermsAndConditions() {
           <strong>Settlement.</strong> Ticket proceeds are settled to the Organizer&rsquo;s
           registered bank account per the organizer agreement, after deduction of the platform
           fee, applicable taxes, and any amounts required to be deducted or collected at source
-          under Indian tax law (including TDS under Section 194-O and GST TCS under Section 52,
-          where applicable).
+          under Indian tax law (including TDS under Section 393 of the Income-tax Act, 2025
+          (formerly Section 194-O) and GST TCS under Section 52 of the CGST Act, where applicable).
         </li>
         <li>
           <strong>Cancelling an Event.</strong> An Organizer who cancels an Event is responsible
