@@ -1,9 +1,11 @@
 import type { Metadata } from "next"
+import { notFound } from "next/navigation"
 import { StateBlock } from "@/components/platform/state-block"
 import { getEventCoverImageUrl } from "@/lib/event-cover"
 import { breadcrumbJsonLd, eventJsonLd } from "@/lib/seo"
 import type { EventDetail } from "@/types/api"
 import EventDetailClient from "./event-detail-client"
+import { CityEventsPage, cityMetadata } from "./city-page"
 
 // Build a share-preview description: tagline/description + date + venue.
 const buildShareDescription = (event: EventDetail): string => {
@@ -50,7 +52,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params
   const event = await fetchEvent(id)
-  if (!event) return { title: "Event Not Found" }
+  if (!event) {
+    // Not an event: it may be a city (/events/hyderabad).
+    return (await cityMetadata(id)) ?? { title: "Event Not Found" }
+  }
 
   const description = buildShareDescription(event)
   // Absolute, public S3 URL of the event cover — used as the link-preview image.
@@ -88,6 +93,11 @@ export default async function EventDetailPage({
   const event = await fetchEvent(id)
 
   if (!event) {
+    const city = await CityEventsPage({ slug: id })
+    if (city) return city
+    // A readable address that is neither an event nor a city is a real 404,
+    // not an "unavailable" page that returns 200.
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) notFound()
     return (
       <main className="page-x py-10">
         <StateBlock

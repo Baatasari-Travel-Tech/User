@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next"
 import { PUBLIC_ROUTES, SITE_ORIGIN } from "@/lib/seo"
 import type { EventSummary } from "@/types/api"
 import { fetchTalentList, type PublicTalent } from "@/lib/talent"
+import { groupCities } from "@/lib/cities"
 
 // Regenerate hourly. Events are published continuously, so a build-time-only
 // sitemap would go stale between deploys — which is exactly the state that
@@ -84,5 +85,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }))
 
-  return [...staticEntries, ...eventEntries, ...talentEntries]
+  // One page per city that has something on (/events/hyderabad). A city with
+  // nothing live or upcoming has no page, so it is not listed either.
+  const cityEntries: MetadataRoute.Sitemap = groupCities(events).map((city) => ({
+    url: `${SITE_ORIGIN}/events/${city.slug}`,
+    lastModified: now,
+    changeFrequency: "daily" as const,
+    priority: 0.8,
+  }))
+
+  return [...staticEntries, ...cityEntries, ...eventEntries, ...talentEntries]
 }

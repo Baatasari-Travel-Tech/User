@@ -3,7 +3,7 @@
 > Baatasari (baatasari.com) is an Indian ticketing and events platform. People discover local events and book digital tickets; performers list a talent profile; organizers and venues use two companion sites. Payments are processed by Cashfree. Tickets carry a signed QR code that is scanned at the entrance.
 
 ## What you can do here
-- [Browse and book events](https://baatasari.com/events): search by city, date and category. Each event page shows the organizer, venue, date, ticket tiers and price breakdown.
+- [Browse and book events](https://baatasari.com/events): search by city, date and category. Each city that has events on has its own page, for example https://baatasari.com/events/hyderabad, listing that city's live and upcoming events. The events page opens on events near the visitor's approximate city when there are any, and on all events otherwise. Each event page shows the organizer, venue, date, ticket tiers and price breakdown.
 - [Find talent](https://baatasari.com/talent): a public directory of performers and artists (https://baatasari.com/talent/browse). Performers pay a one-time registration fee (currently ₹299) to be listed; their contact details are shown only to approved organizers.
 - [Sell tickets as an organizer](https://baatasari.com/for-organizers): organizers sign up at https://organizer.baatasari.com.
 - [List a venue](https://venue.baatasari.com): venue owners list at https://venue.baatasari.com for a one-time fee (currently ₹999).

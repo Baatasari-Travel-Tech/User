@@ -54,6 +54,7 @@ export default function Page() {
       <li><strong>Payments:</strong> amount, status and the payment gateway’s reference numbers. <strong>We never see or store your card, UPI or bank credentials</strong>; you give them directly to Cashfree.</li>
       <li><strong>Talent profile (if you register):</strong> your name or stage name, photo, city, category, description, links to up to four videos, your phone, WhatsApp and email for bookings, and the registration payment record.</li>
       <li><strong>Support:</strong> what you send us when you contact us or raise a ticket: name, email, phone, category and description.</li>
+      <li><strong>Approximate location:</strong> when you open Events, we work out your city (not your exact position) from your internet connection, to show events near you. It is used only for that, is not stored, and you can switch to all events or pick another city at any time.</li>
       <li><strong>Technical:</strong> sign-in cookies, your IP address and device and browser details in our server logs, and de-duplicated page-view counts for event pages.</li>
       </ul>
       <h2 id="how-we-use" className="scroll-mt-6">3. Why we use it</h2>
@@ -62,7 +63,7 @@ export default function Page() {
       <li>Process bookings and payments, issue tickets and tax invoices, run entry check-in, and process refunds.</li>
       <li>Show your talent profile in the directory and, with your consent, share your contact details with approved Organizers.</li>
       <li>Send service messages: confirmations, tickets, payment and refund updates, verification codes and security notices.</li>
-      <li>Suggest events using your stated location and interests.</li>
+      <li>Suggest events using your stated location and interests, and your approximate city when you open Events.</li>
       <li>Give Organizers aggregate analytics for their events (for example views against purchases), not your individual browsing.</li>
       <li>Answer support requests and complaints, and keep records of them.</li>
       <li>Detect and prevent fraud and abuse, and keep the Platform secure.</li>

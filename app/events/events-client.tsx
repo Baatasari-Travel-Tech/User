@@ -1,6 +1,7 @@
 "use client"
 
 import { Suspense, useMemo, useState } from "react"
+import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
 import { EventGrid, EventGridSkeleton } from "@/components/events/event-grid"
@@ -9,6 +10,7 @@ import { SiteFooter } from "@/components/site-footer"
 import { toEventCardData, getEventPhase } from "@/lib/event-helpers"
 import { eventMatchesCategoryGroup } from "@/lib/event-categories"
 import { apiRequest } from "@/lib/api/client"
+import { citySlug, groupCities } from "@/lib/cities"
 import type { EventSummary } from "@/types/api"
 
 const PHASE_ORDER: Record<string, number> = { ongoing: 0, upcoming: 1, recent: 2 }
@@ -84,6 +86,8 @@ function matchesLocation(event: EventSummary, where: string): boolean {
   if (!where.trim()) return true
   const needle = where.trim().toLowerCase()
   if (event.locationCity && event.locationCity.toLowerCase() === needle) return true
+  // "Bangalore" and "Bengaluru" are the same city.
+  if (event.locationCity && citySlug(event.locationCity) === citySlug(where)) return true
   return typeof event.venue === "string" && event.venue.toLowerCase().includes(needle)
 }
 
@@ -111,6 +115,34 @@ function EventsPageContent() {
 
   const data = eventsQuery.data
   const [statusFilter, setStatusFilter] = useState<StatusFilterKey>("live")
+  const [showEverywhere, setShowEverywhere] = useState(false)
+
+  // Approximate city from the visitor’s connection (city level only, nothing
+  // stored). Failure or an unknown location just means "show all events".
+  const geoQuery = useQuery({
+    queryKey: ["visitor-geo"],
+    queryFn: async (): Promise<{ city: string | null }> => {
+      const res = await fetch("/api/geo", { cache: "no-store" })
+      return res.ok ? ((await res.json()) as { city: string | null }) : { city: null }
+    },
+    staleTime: Infinity,
+    retry: false,
+  })
+
+  // The visitor’s city, as it is spelled on our events, but only when that
+  // city has something on. An explicit "where" always wins.
+  const nearCity = useMemo(() => {
+    if (where.trim() || showEverywhere) return null
+    const slug = citySlug(geoQuery.data?.city)
+    if (!slug) return null
+    return groupCities(data ?? []).find((c) => c.slug === slug)?.name ?? null
+  }, [data, geoQuery.data, where, showEverywhere])
+  const effectiveWhere = where.trim() || nearCity || ""
+  const cityList = useMemo(() => groupCities(data ?? []), [data])
+  const geoCityName = geoQuery.data?.city ?? null
+  const noEventsNearby = Boolean(
+    !where.trim() && !showEverywhere && !nearCity && geoCityName && data && citySlug(geoCityName),
+  )
 
   // Only ever lists cities that have at least one real published event —
   // never a hardcoded/aspirational list.
@@ -130,7 +162,7 @@ function EventsPageContent() {
         matchesCategory(event, category) &&
         matchesWhen(event, when) &&
         matchesBudget(event, budget) &&
-        matchesLocation(event, where),
+        matchesLocation(event, effectiveWhere),
     )
 
     // Live/ongoing first, then upcoming (soonest first), then completed
@@ -145,7 +177,7 @@ function EventsPageContent() {
         return isPast ? b.sort - a.sort : a.sort - b.sort
       })
       .map((item) => toEventCardData(item.event))
-  }, [data, query, category, when, budget, where])
+  }, [data, query, category, when, budget, effectiveWhere])
 
   const visibleCards = sortedCards.filter((c) => c.status === statusFilter)
   const gridTitle = `${STATUS_FILTERS.find((f) => f.key === statusFilter)?.label ?? "Live"} Events`
@@ -161,6 +193,37 @@ function EventsPageContent() {
         ) : (
           <>
             <EventsSearchHero cities={cities} />
+
+            {(nearCity || noEventsNearby || cityList.length > 0) && (
+              <section className="page-x-wide pt-6">
+                {nearCity ? (
+                  <p className="text-sm text-(--gray-700)">
+                    Showing events near <strong>{nearCity}</strong>.{" "}
+                    <button type="button" onClick={() => setShowEverywhere(true)} className="font-semibold underline underline-offset-2">
+                      Show events everywhere
+                    </button>
+                  </p>
+                ) : noEventsNearby ? (
+                  <p className="text-sm text-(--gray-700)">
+                    No events in {geoCityName} yet, so here is everything that is on.
+                  </p>
+                ) : null}
+                {cityList.length > 0 ? (
+                  <nav aria-label="Browse events by city" className="mt-3 flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-semibold text-(--gray-500)">Cities:</span>
+                    {cityList.map((c) => (
+                      <Link
+                        key={c.slug}
+                        href={`/events/${c.slug}`}
+                        className="inline-flex min-h-11 items-center rounded-full border border-(--gray-200) bg-white px-4 text-sm font-semibold text-(--gray-700) hover:border-(--brand-blue) hover:text-(--brand-blue)"
+                      >
+                        {c.name}
+                      </Link>
+                    ))}
+                  </nav>
+                ) : null}
+              </section>
+            )}
 
             {/* Header row: title + count (left), status filters (right) */}
             <section className="page-x-wide pt-10 md:pt-12">
