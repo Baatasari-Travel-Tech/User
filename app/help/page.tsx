@@ -1,4 +1,6 @@
 import type { Metadata } from "next"
+import { faqJsonLd, jsonLdString } from "@/lib/faq-schema"
+import { breadcrumbJsonLd } from "@/lib/seo"
 import Link from "next/link"
 import { ArrowLeft, Mail } from "lucide-react"
 import { PageShell, SectionCard } from "@/components/platform/page-shell"
@@ -116,6 +118,18 @@ const SECTIONS: { title: string; faqs: Faq[] }[] = [
 export default function HelpPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLdString([
+            faqJsonLd(SECTIONS.flatMap((section) => section.faqs)),
+            breadcrumbJsonLd([
+              { name: "Home", path: "/" },
+              { name: "Help", path: "/help" },
+            ]),
+          ]),
+        }}
+      />
       <PageShell
         eyebrow="Help"
         title="How can we help?"

@@ -58,7 +58,12 @@ export const metadata = {
   // Derived from nlogo.png rather than pointing at it: the source is 870x870
   // and 164 KiB, and icons are fetched raw — the optimizer never sees them.
   icons: {
-    icon: '/icon-32.png',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon-16.png', type: 'image/png', sizes: '16x16' },
+      { url: '/icon-32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+    ],
     apple: '/apple-touch-icon.png',
   },
   openGraph: {

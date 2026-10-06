@@ -1,0 +1,29 @@
+# Baatasari
+
+> Baatasari (baatasari.com) is an Indian ticketing and events platform. People discover local events and book digital tickets; performers list a talent profile; organizers and venues use two companion sites. Payments are processed by Cashfree. Tickets carry a signed QR code that is scanned at the entrance.
+
+## What you can do here
+- [Browse and book events](https://baatasari.com/events): search by city, date and category. Each event page shows the organizer, venue, date, ticket tiers and price breakdown.
+- [Find talent](https://baatasari.com/talent): a public directory of performers and artists (https://baatasari.com/talent/browse). Performers pay a one-time registration fee (currently ₹299) to be listed; their contact details are shown only to approved organizers.
+- [Sell tickets as an organizer](https://baatasari.com/for-organizers): organizers sign up at https://organizer.baatasari.com.
+- [List a venue](https://venue.baatasari.com): venue owners list at https://venue.baatasari.com for a one-time fee (currently ₹999).
+- [Help and FAQs](https://baatasari.com/help)
+
+## Key facts
+- Baatasari is an intermediary: events are created, owned and run by their organizers.
+- Platform fee: currently a flat ₹10 per paid ticket, inclusive of GST, shown at checkout before payment.
+- At most 10 tickets per person per event.
+- If an organizer or Baatasari cancels an event, the buyer is refunded in full. A confirmed ticket is otherwise not refundable unless the organizer agrees.
+- Seats are held for about 15 minutes while you pay.
+- Service area: India. Currency: INR.
+
+## Policies
+- [Terms & Conditions](https://baatasari.com/terms-and-conditions)
+- [Privacy Policy](https://baatasari.com/privacy-policy)
+- [Refund policy](https://baatasari.com/refund-policy)
+- [Grievance redressal](https://baatasari.com/grievance)
+
+## Contact
+- General: contact-us@baatasari.com
+- Grievance Officer: grievance@baatasari.com (acknowledges within 24 hours, resolves within 15 days)
+- Operator: Simha Karthik Reddy, sole proprietor trading as BAATASARI, Nellore, Andhra Pradesh, India. GSTIN 37HRGPR8105H1ZD.

@@ -103,11 +103,26 @@ export const bypassesMaintenance = (pathname: string): boolean =>
 export const organizationJsonLd = () => ({
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: SITE_NAME,
-  url: SITE_ORIGIN,
-  logo: `${SITE_ORIGIN}/nlogo.png`,
-  description: "Book the best events, dining, and activities near you.",
+  "@id": "https://baatasari.com/#organization",
+  name: "Baatasari",
+  legalName: "Simha Karthik Reddy (trading as BAATASARI)",
+  url: "https://baatasari.com",
+  logo: "https://baatasari.com/nlogo.png",
+  description: "Book the best events, talent and experiences near you. Baatasari is an events and ticketing platform in India.",
   areaServed: { "@type": "Country", name: "India" },
+  email: "contact-us@baatasari.com",
+  sameAs: ["https://www.instagram.com/baatasari._", "https://www.linkedin.com/company/baatasari/"],
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Nellore",
+    addressRegion: "Andhra Pradesh",
+    postalCode: "524002",
+    addressCountry: "IN",
+  },
+  contactPoint: [
+    { "@type": "ContactPoint", contactType: "customer support", email: "contact-us@baatasari.com", areaServed: "IN", availableLanguage: ["en"] },
+    { "@type": "ContactPoint", contactType: "grievance officer", email: "grievance@baatasari.com", areaServed: "IN", availableLanguage: ["en"] },
+  ],
 })
 
 /**
