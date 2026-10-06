@@ -13,6 +13,7 @@ import Performers from "@/components/about/performers"
 import CampusAmbassador from "@/components/about/campus-ambassador"
 import CtaBand from "@/components/about/cta-band"
 import Marquee from "@/components/about/marquee"
+import Faq from "@/components/about/faq"
 
 export default function HomeClient() {
     const router = useRouter()
@@ -47,6 +48,7 @@ export default function HomeClient() {
             <RestaurantOwner />
             <CampusAmbassador />
             <Performers />
+            <Faq />
             <SiteFooter />
         </main>
     )

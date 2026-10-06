@@ -14,6 +14,8 @@ import {
   Tag,
   Youtube,
 } from "lucide-react"
+import { jsonLdString } from "@/lib/faq-schema"
+import { SITE_ORIGIN, breadcrumbJsonLd } from "@/lib/seo"
 import {
   fetchPublicTalent,
   formatPrice,
@@ -67,8 +69,34 @@ export default async function TalentProfilePage({ params }: { params: Params }) 
   const linkIcon = (url: string) => (isInstagram(url) ? Instagram : isYouTube(url) ? Youtube : Globe)
   const linkLabel = (url: string) => (isInstagram(url) ? "Instagram" : isYouTube(url) ? "YouTube" : "Website")
 
+  // Public facts only: the contact details are never put in structured data.
+  const personJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: talent.stageName,
+    jobTitle: talent.mainSkill ?? undefined,
+    description: talent.bio?.replace(/s+/g, " ").slice(0, 300) || undefined,
+    image: talent.photoUrl ?? undefined,
+    url: `${SITE_ORIGIN}/talent/p/${talent.slug}`,
+    homeLocation: talent.location ? { "@type": "Place", name: talent.location } : undefined,
+    sameAs: talent.portfolioLinks.length > 0 ? talent.portfolioLinks : undefined,
+  }
+
   return (
     <main className="min-h-[calc(100dvh-72px)] bg-(--background) px-4 py-8 sm:px-6 lg:px-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLdString([
+            personJsonLd,
+            breadcrumbJsonLd([
+              { name: "Home", path: "/" },
+              { name: "Talent", path: "/talent/browse" },
+              { name: talent.stageName, path: `/talent/p/${talent.slug}` },
+            ]),
+          ]),
+        }}
+      />
       <div className="mx-auto w-full max-w-5xl">
         <Link
           href="/talent/browse"
