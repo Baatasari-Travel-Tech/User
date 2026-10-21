@@ -27,8 +27,8 @@ export default function Page() {
   return (
     <LegalPage
       title="Privacy Policy"
-      standfirst="Effective 6 October 2026. This notice explains, in plain language, what personal data we collect, why, who gets it, how long we keep it, and what you can do. It follows the Digital Personal Data Protection Act, 2023 (“DPDP Act”) and its Rules, 2025."
-      updated="6 October 2026"
+      standfirst="Effective 22 October 2026. This notice explains, in plain language, what personal data we collect, why, who gets it, how long we keep it, and what you can do. It follows the Digital Personal Data Protection Act, 2023 (“DPDP Act”) and its Rules, 2025."
+      updated="22 October 2026"
     >
       <nav aria-label="Contents">
         <p>
@@ -78,12 +78,12 @@ export default function Page() {
       <li><strong>Organizers:</strong> when you book, the details needed to run the event (attendee name, contact details, ticket details and check-in status) go to that event’s Organizer. The Organizer becomes an independent data fiduciary for that data, may use it only to run that event, and may not sell it or use it for unrelated marketing.</li>
       <li><strong>Approved Organizers, if you are Talent:</strong> your phone, WhatsApp and email, through our “Find talent” tool, so they can offer you work. Everyone else sees only your public profile.</li>
       <li><strong>Payment gateway (Cashfree):</strong> to take payments and make refunds. You give your payment details directly to them.</li>
-      <li><strong>Service providers who process data for us:</strong> Hetzner (our servers and database), Cloudflare (website delivery, security and analytics), Amazon Web Services (storage of uploaded images and documents) and our own mail server (email). They act on our instructions under their service terms and must keep the data secure.</li>
+      <li><strong>Service providers who process data for us:</strong> Hetzner (our servers and database), Cloudflare (website delivery, security, analytics and storage of uploaded images and documents) and our own mail server (email). They act on our instructions under their service terms and must keep the data secure.</li>
       <li><strong>Google:</strong> if you choose “Sign in with Google”, sign-in is handled by Google under its own privacy policy.</li>
       <li><strong>Authorities:</strong> where the law, a court order or a lawful request requires, or to protect the rights and safety of users or the public.</li>
       </ul>
       <h2 id="outside-india" className="scroll-mt-6">6. Where your data is kept and transfers outside India</h2>
-      <p>Our database and application servers are hosted with Hetzner in <strong>Germany</strong>. Website delivery runs on Cloudflare’s global network, so pages and files may pass through or be cached at locations around the world. Uploaded images and documents are stored in India (Amazon Web Services, Mumbai). The DPDP Act allows transfer of personal data outside India except to countries the Central Government restricts; we will not transfer data to any country it restricts, and we will follow any further rule it makes.</p>
+      <p>Our database and application servers are hosted with Hetzner in <strong>Germany</strong>. Website delivery runs on Cloudflare’s global network, so pages and files may pass through or be cached at locations around the world. Uploaded images and documents are stored with Cloudflare (R2 storage), in data centres that may be outside India. The DPDP Act allows transfer of personal data outside India except to countries the Central Government restricts; we will not transfer data to any country it restricts, and we will follow any further rule it makes.</p>
       <h2 id="cookies" className="scroll-mt-6">7. Cookies and analytics</h2>
       <ul>
       <li><strong>Essential cookies:</strong> secure, httpOnly cookies keep you signed in. The site cannot work without them, and we do not use them for advertising.</li>
