@@ -1,5 +1,5 @@
 import { defineCloudflareConfig } from "@opennextjs/cloudflare"
-import s3IncrementalCache from "./open-next/s3-incremental-cache"
+import kvIncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cache/kv-incremental-cache"
 
 /**
  * How this app runs on Cloudflare Workers.
@@ -9,15 +9,17 @@ import s3IncrementalCache from "./open-next/s3-incremental-cache"
  * one is configured. These are the routes that depend on it:
  *
  *   app/sitemap.ts          revalidate = 3600   <- newly published events
- *   app/events/[id]         revalidate = 60
+ *   app/events/[id]         revalidate = 60     (event pages and city pages)
  *   app/checkout            revalidate = 30
  *   lib/event-helpers       revalidate = 60
+ *   lib/events-server       revalidate = 300    <- city pages and the sitemap
  *
- * S3 rather than the adapter's built-in R2 or KV: it keeps this in the same AWS
- * account as the event covers, in ap-south-2, which is close enough to the edge
- * for the cache to be worth having. The trade is that it is our code to
- * maintain, and reads are billed as egress — see open-next/s3-incremental-cache.ts.
+ * Workers KV, via the adapter's own implementation: free at our size, no keys
+ * to hold or rotate, and the binding is declared in wrangler.jsonc
+ * (NEXT_INC_CACHE_KV). It replaced a hand-written Amazon S3 cache on
+ * 2026-10-21. KV is eventually consistent, so a revalidated page can take up
+ * to about a minute to show everywhere, which these routes already tolerate.
  */
 export default defineCloudflareConfig({
-  incrementalCache: s3IncrementalCache,
+  incrementalCache: kvIncrementalCache,
 })

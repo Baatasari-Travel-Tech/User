@@ -1,5 +1,5 @@
 const DEFAULT_AVATAR_BASE_URL =
-  "https://baatasari-events-public-535709430287-ap-south-2-an.s3.ap-south-2.amazonaws.com"
+  "https://media.baatasari.com"
 
 const avatarBaseUrl = (
   process.env.NEXT_PUBLIC_AVATAR_BASE_URL?.trim() || DEFAULT_AVATAR_BASE_URL

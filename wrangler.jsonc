@@ -23,24 +23,15 @@
     "enabled": true
   },
 
-  // Where the ISR cache lives — see open-next/s3-incremental-cache.ts.
+  // Where the ISR cache lives: Workers KV (free, nothing to rotate).
   //
-  // Only the non-secret half is here. The two AWS keys are Worker *secrets* and
-  // must never appear in this file, which is committed:
-  //
-  //   NEXT_INC_CACHE_S3_ACCESS_KEY_ID
-  //   NEXT_INC_CACHE_S3_SECRET_ACCESS_KEY
-  //
-  // Set those in the dashboard, or with `wrangler secret put <name>`.
-  //
-  // They must be SECRETS, not plain-text variables. `wrangler deploy` defaults
-  // to keep_vars=false: it deletes every var and re-sets only what this block
-  // lists. A key added as a plain variable therefore survives until the next
-  // push to main and then vanishes, taking the cache with it. Secrets are
-  // never touched by a deployment.
-  "vars": {
-    "NEXT_INC_CACHE_S3_BUCKET": "baatasari-frontend-cache",
-    "NEXT_INC_CACHE_S3_REGION": "ap-south-2",
-    "NEXT_INC_CACHE_S3_PREFIX": "incremental-cache"
-  }
+  // The binding name is fixed by the adapter (kv-incremental-cache). The
+  // namespace id is not a secret; it is bound to our Cloudflare account.
+  // Replaces the Amazon S3 cache, 2026-10-21 (SESSION-QUEUE #43).
+  "kv_namespaces": [
+    {
+      "binding": "NEXT_INC_CACHE_KV",
+      "id": "7ee7c338c89d4ebc99b136ee5a541dc4"
+    }
+  ]
 }

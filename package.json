@@ -15,8 +15,7 @@
     "assets": "node scripts/build-assets.mjs",
     "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare preview",
-    "cf:deploy": "opennextjs-cloudflare deploy",
-    "cache:check": "node scripts/check-s3-cache.mjs"
+    "cf:deploy": "opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -25,7 +24,6 @@
     "@tanstack/react-query": "^5.100.10",
     "@types/animejs": "^3.1.13",
     "animejs": "^4.4.1",
-    "aws4fetch": "^1.0.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
