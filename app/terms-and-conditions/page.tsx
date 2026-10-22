@@ -38,8 +38,8 @@ export default function Page() {
   return (
     <LegalPage
       title="Terms & Conditions"
-      standfirst="Effective 6 October 2026. These Terms are a legally binding agreement between you and Baatasari. Please read them before you book."
-      updated="6 October 2026"
+      standfirst="Effective 22 October 2026. These Terms are a legally binding agreement between you and Baatasari. Please read them before you book."
+      updated="22 October 2026"
     >
       <nav aria-label="Contents">
         <p>
@@ -106,7 +106,7 @@ export default function Page() {
       <li>Please contact us through the <a href="/grievance">grievance process</a> before raising a chargeback with your bank for a payment that was validly completed; it is faster for you, and tickets on a disputed payment are suspended while the dispute is open.</li>
       </ul>
       <h2 id="refunds" className="scroll-mt-6">9. Cancellations and refunds</h2>
-      <p>Our <a href="/refund-policy">Refund Policy</a> sets out the rules. In short: if an Organizer or Baatasari cancels an Event, you get back everything you paid for the unused tickets; otherwise a confirmed ticket is not refundable unless the Organizer agrees; and refunds go to the original payment method.</p>
+      <p>Our <a href="/refund-policy">Refund Policy</a> sets out the rules. In short: if an Organizer or Baatasari cancels an Event, you get back everything you paid for the unused tickets; on an Event the Organizer has marked refundable you can cancel your own order until 2 hours before it starts and get the ticket price back less a cancellation charge (the platform fee and payment-gateway charge are not refunded); on a non-refundable Event a confirmed ticket is not refunded; and refunds go to the original payment method. Each Event shows on its page and at checkout whether it is refundable.</p>
       <h2 id="talent" className="scroll-mt-6">10. Talent registrations</h2>
       <ul>
       <li>To list a talent profile you submit your details and pay a one-time registration fee, currently <strong>₹299</strong>. We issue a GST invoice for it. We may waive the fee for a profile at our discretion; a waived profile is treated as paid.</li>

@@ -66,16 +66,23 @@ export function TermsDialog({ children }: TermsDialogProps) {
             4. Payments &amp; Refunds
           </h3>
           <p className="mb-3">
-            All payments made on the platform are subject to the organizer&apos;s
-            refund policy. Baatasari acts only as a facilitator and is not
-            responsible for disputes between attendees and organizers.
+            Each event is either <strong>refundable</strong> or{" "}
+            <strong>non-refundable</strong>; this is shown on the event page and
+            at checkout. If the organizer or Baatasari cancels an event, you get
+            a full refund. On a refundable event you can cancel your order until
+            2 hours before it starts and get the ticket price back minus a
+            cancellation charge that depends on how close the event is; the
+            platform fee and the payment-gateway charge are not refunded.
+            Baatasari acts only as a facilitator and is not responsible for
+            disputes between attendees and organizers. Read the full{" "}
+            <a href="/refund-policy" className="underline">Refund Policy</a>.
           </p>
 
           <h3 className="mt-5 mb-2 text-base font-semibold text-(--brand-navy)">
             5. Event Bookings
           </h3>
           <ul className="mb-3 list-disc space-y-1 pl-5">
-            <li>Tickets once booked cannot be exchanged or refunded.</li>
+            <li>Tickets cannot be exchanged. Refunds follow the event&apos;s refund setting (see section 4).</li>
             <li>
               An internet handling fee per ticket may be levied. Please check
               the final amount before payment.
@@ -119,7 +126,13 @@ export function TermsDialog({ children }: TermsDialogProps) {
             use after changes constitutes acceptance.
           </p>
 
-          <p className="mt-6 text-xs text-(--gray-500)">Last updated: March 2026</p>
+          <p className="mt-6 text-xs text-(--gray-500)">
+            This is a short summary. The full{" "}
+            <a href="/terms-and-conditions" className="underline">Terms &amp; Conditions</a>,{" "}
+            <a href="/privacy-policy" className="underline">Privacy Policy</a> and{" "}
+            <a href="/refund-policy" className="underline">Refund Policy</a> apply.
+            Last updated: October 2026.
+          </p>
         </div>
       </DialogContent>
     </Dialog>

@@ -260,10 +260,48 @@ export type EventSummary = {
   bookedCount?: number;
   ticketTierCount?: number;
   organizerDisplayName?: string | null;
+  // Buyers can cancel their own order (refundable event). Absent until the
+  // Backend that sends it is deployed, so treat a missing value as "unknown".
+  refundable?: boolean;
+};
+
+// The buyer-cancellation rules, as sent by the Backend (modules/refunds/refundPolicy.ts).
+export type RefundPolicy = {
+  cutoffHours: number;
+  minChargePerTicketRupees: number;
+  tiers: Array<{ label: string; chargePct: number }>;
 };
 
 export type EventDetail = EventSummary & {
   ticketTiers: OrganizerEventTicketTier[];
+  refundPolicy?: RefundPolicy;
+};
+
+// What cancelling an order would refund right now (GET /user/history/:id).
+export type AttendeeRefundQuote = {
+  orderId: string;
+  eventTitle: string;
+  refundable: boolean;
+  eligible: boolean;
+  blockedReason:
+    | "NOT_PAID"
+    | "ALREADY_REFUNDED"
+    | "FREE_ORDER"
+    | "EVENT_CANCELLED"
+    | "NOT_REFUNDABLE"
+    | "TOO_LATE"
+    | "NOTHING_TO_REFUND"
+    | null;
+  ticketPrice: number;
+  cancellationChargePct: number;
+  cancellationCharge: number;
+  refundAmount: number;
+  platformFeeKept: number;
+  gatewayFeeKept: number;
+  tierLabel: string | null;
+  hoursBeforeStart: number;
+  refundableUntil: string;
+  policy: RefundPolicy;
 };
 
 export type GstThresholdStatus = {
@@ -358,6 +396,8 @@ export type TicketRecord = {
   refundedAmount: number;
   currency: string;
   paidAt: string | null;
+  // What cancelling would refund right now; null when it could not be worked out.
+  refund?: AttendeeRefundQuote | null;
 };
 
 export type TaxInvoice = {

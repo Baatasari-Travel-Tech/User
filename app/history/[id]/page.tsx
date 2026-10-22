@@ -8,6 +8,7 @@ import { ArrowLeft, Download, Share2 } from "lucide-react"
 import { qrDataUrl } from "@/lib/qrcode"
 import { useQuery } from "@tanstack/react-query"
 import { ProtectedRoute } from "@/components/auth/protected-route"
+import { CancelOrder } from "@/components/history/cancel-order"
 import { apiRequest } from "@/lib/api/client"
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/format"
 import type { OrderTicket, TicketRecord } from "@/types/api"
@@ -391,13 +392,27 @@ export default function TicketDetailPage() {
               </div>
 
               {query.data.ticketStatus === "ACTIVE" ? (
-                <div className="mt-6 flex justify-end border-t border-(--gray-100) pt-6">
-                  <Link
-                    href={buildCancelRequestHref(query.data)}
-                    className="inline-flex items-center justify-center rounded-full border border-rose-200 px-5 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50"
-                  >
-                    Cancel ticket
-                  </Link>
+                <div className="mt-6 border-t border-(--gray-100) pt-6">
+                  {query.data.refund ? (
+                    // The Backend worked out what cancelling would refund.
+                    <CancelOrder
+                      ticketId={params.id}
+                      quote={query.data.refund}
+                      quantity={query.data.quantity}
+                      supportHref={buildCancelRequestHref(query.data)}
+                      onCancelled={() => void query.refetch()}
+                    />
+                  ) : (
+                    // Older Backend, or the quote could not be worked out: ask support.
+                    <div className="flex justify-end">
+                      <Link
+                        href={buildCancelRequestHref(query.data)}
+                        className="inline-flex items-center justify-center rounded-full border border-rose-200 px-5 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50"
+                      >
+                        Cancel ticket
+                      </Link>
+                    </div>
+                  )}
                 </div>
               ) : null}
             </>

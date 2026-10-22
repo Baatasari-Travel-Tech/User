@@ -31,6 +31,7 @@ import type { ApiEnvelope, ApiError, EventDetail } from "@/types/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { TermsDialog } from "@/components/common/terms-dialog"
+import { RefundPolicyNotice } from "@/components/refund-policy-notice"
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -867,6 +868,16 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
                         </div>
                       )}
                     </div>
+
+                    {/* Refund rules: said plainly before they pay (refundable with the
+                        charges, or clearly non-refundable). */}
+                    {!isFreeEvent && typeof event.refundable === "boolean" ? (
+                      <RefundPolicyNotice
+                        refundable={event.refundable}
+                        policy={event.refundPolicy}
+                        defaultOpen
+                      />
+                    ) : null}
 
                     {/* Terms */}
                     <label className="flex cursor-pointer items-start space-x-3">

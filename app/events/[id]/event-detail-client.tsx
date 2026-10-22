@@ -28,6 +28,7 @@ import {
   Users,
 } from "lucide-react"
 import { useAuth } from "@/app/providers"
+import { RefundPolicyNotice } from "@/components/refund-policy-notice"
 import { useAuthModal } from "@/components/auth/auth-modal-context"
 import { ShareEventButton } from "@/components/events/share-event-button"
 import { isEventPast } from "@/lib/event-helpers"
@@ -602,7 +603,7 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
                       </p>
                       <p className="text-[11px] text-slate-500">
                         {isCancelled
-                          ? "If you booked, you'll be refunded — minus the gateway and platform fees."
+                          ? "If you booked, you'll get a full refund."
                           : "Tickets are no longer available."}
                       </p>
                     </div>
@@ -622,8 +623,16 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
                       <span className="relative">{bookCtaLabel}</span>
                     </button>
                     <p className="mt-3 text-center text-[11px] text-(--gray-400)">
-                      Secure checkout · instant QR tickets · refunded if cancelled (minus fees)
+                      Secure checkout · instant QR tickets · full refund if the event is cancelled
                     </p>
+                    {/* Clear up front, before they pick tickets: refundable or not, and the charges. */}
+                    {typeof event.refundable === "boolean" && !isFreeEvent ? (
+                      <RefundPolicyNotice
+                        refundable={event.refundable}
+                        policy={event.refundPolicy}
+                        className="mt-4"
+                      />
+                    ) : null}
                   </>
                 )}
               </div>
