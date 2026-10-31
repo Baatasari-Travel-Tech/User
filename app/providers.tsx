@@ -9,7 +9,7 @@ import {
   onSessionCleared,
   onSessionStarted,
 } from "@/lib/auth/session-channel"
-import { useAuthStore } from "@/lib/auth/store"
+import { hasStoredSession, useAuthStore } from "@/lib/auth/store"
 import { ApiError } from "@/types/api"
 import type {
   ApiEnvelope,
@@ -304,10 +304,21 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   //
   // `setBootstrapping` was in the dependency array and is not used here; the
   // effect only ever called bootstrap, which closes over it.
+  //
+  // A browser with no stored signed-in snapshot is signed out, so the probe is
+  // skipped: it could only answer 401 (two of them, with the refresh), a red
+  // error in the console of every logged-out visitor. Two ways in without a
+  // snapshot still need the probe, and both run it themselves: Google's return
+  // lands on /auth/callback (checked here), and a sign-in in another tab
+  // announces itself (onSessionStarted below calls bootstrap).
   useEffect(() => {
+    if (!hasStoredSession() && window.location.pathname !== "/auth/callback") {
+      setBootstrapping(false)
+      return
+    }
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void bootstrap()
-  }, [bootstrap])
+  }, [bootstrap, setBootstrapping])
 
   // Cross-tab session sync. When tab A signs out (or hits a refresh
   // failure), the API client broadcasts on the "baatasari-auth" channel.

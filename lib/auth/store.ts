@@ -29,6 +29,32 @@ type AuthStore = {
   clearSession: () => void
 }
 
+const AUTH_STORAGE_KEY = "baatasari-auth"
+
+/**
+ * Whether this browser holds a signed-in snapshot (what `persist` below wrote
+ * the last time a session existed).
+ *
+ * The session cookies are httpOnly, so script cannot ask "am I signed in?" —
+ * the only way to find out is a request that answers 401 when the visitor is
+ * signed out, which is the normal state of most visitors and prints a red
+ * error in their console each time. This lets the first-load probe be skipped
+ * when there is nothing to revalidate.
+ *
+ * Errs towards "yes" whenever it cannot tell (storage blocked, unreadable
+ * value): a needless probe costs two quiet requests; a skipped one would leave
+ * a signed-in visitor looking signed out.
+ */
+export const hasStoredSession = (): boolean => {
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY)
+    if (!raw) return false
+    return Boolean(JSON.parse(raw)?.state?.user)
+  } catch {
+    return true
+  }
+}
+
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set) => ({
@@ -53,7 +79,7 @@ export const useAuthStore = create<AuthStore>()(
         }),
     }),
     {
-      name: "baatasari-auth",
+      name: AUTH_STORAGE_KEY,
       // localStorage (not sessionStorage) so a cached identity survives full
       // reloads and new tabs. No tokens are stored here — auth itself stays in
       // httpOnly cookies; this is only a UI snapshot to render instantly while
