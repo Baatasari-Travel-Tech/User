@@ -18,15 +18,18 @@ const CLARITY_ID =
     ? process.env.NEXT_PUBLIC_CLARITY_ID?.trim() || 'z6fdykqcax'
     : ''
 
-// Pages where nothing personal is shown. Clarity is only ever LOADED on one of
-// these: a visit that starts on checkout, My tickets (ticket QR codes), sign-in,
-// profile or an invoice never loads the script at all.
-const PUBLIC_EXACT = new Set(['/', '/talent', '/talent/browse', '/for-organizers', '/help', '/contact-us'])
-const PUBLIC_PREFIXES = ['/events', '/talent/p/']
+// Clarity runs on every page EXCEPT these. A visit that starts on one of them
+// never loads the script at all.
+//  - /checkout and /profile: the founder's choice (payment details, personal data).
+//  - /reset-password and /auth: Clarity records the page address, and these carry
+//    a one-time secret in it (the reset token; the pending sign-in ticket on the
+//    Google/2FA return), which would then sit in a third-party dashboard.
+// Ticket QR codes (history, order-confirmed) are masked individually with
+// data-clarity-mask on the image, on top of the Strict masking set in Clarity.
+const EXCLUDED_PREFIXES = ['/checkout', '/profile', '/reset-password', '/auth']
 
-const isPublicPath = (pathname: string): boolean =>
-  PUBLIC_EXACT.has(pathname) ||
-  PUBLIC_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix.endsWith('/') ? prefix : `${prefix}/`))
+const isRecordable = (pathname: string): boolean =>
+  !EXCLUDED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
 
 let injected = false
 
@@ -53,16 +56,16 @@ export default function Clarity() {
 
   useEffect(() => {
     if (!CLARITY_ID) return
-    const publicPage = isPublicPath(pathname ?? '/')
+    const recordable = isRecordable(pathname ?? '/')
 
-    // Moving on from a public page to checkout / tickets / account WITHOUT a
-    // reload keeps an already-loaded Clarity running, so everything there is
-    // masked (text, inputs and images) for as long as the visitor stays off the
-    // public pages. Hard loads of those pages never load Clarity at all.
-    if (publicPage) document.body.removeAttribute('data-clarity-mask')
+    // Moving on to an excluded page WITHOUT a reload keeps an already-loaded
+    // Clarity running, so everything there is masked (text, inputs and images)
+    // for as long as the visitor stays on it. Hard loads of those pages never
+    // load Clarity at all.
+    if (recordable) document.body.removeAttribute('data-clarity-mask')
     else document.body.setAttribute('data-clarity-mask', 'True')
 
-    if (!publicPage) return
+    if (!recordable) return
 
     // After the page is usable, so it never competes with the first paint.
     const start = () => injectClarity(CLARITY_ID)

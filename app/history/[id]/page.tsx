@@ -307,6 +307,7 @@ export default function TicketDetailPage() {
                     {qrMap[pass.ticketId] ? (
                       // eslint-disable-next-line @next/next/no-img-element -- a data: URL QR code drawn in the browser
                       <img
+                        data-clarity-mask="True"
                         src={qrMap[pass.ticketId]}
                         alt={`QR code for ${pass.tierName ?? "ticket"}`}
                         width={180}
