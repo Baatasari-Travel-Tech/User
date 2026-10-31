@@ -1,6 +1,7 @@
 import './globals.css'
 import Providers from './providers'
 import SiteShell from '../components/site-shell'
+import Clarity from '../components/clarity'
 import localFont from 'next/font/local'
 import { SITE_NAME, SITE_ORIGIN, organizationJsonLd, webSiteJsonLd } from '@/lib/seo'
 
@@ -100,6 +101,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <SiteShell>{children}</SiteShell>
         </Providers>
+        <Clarity />
       </body>
     </html>
   )
