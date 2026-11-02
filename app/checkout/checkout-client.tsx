@@ -103,10 +103,10 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
   const isLoggedIn = Boolean(session?.user)
   const accountEmail = session?.user?.email ?? ""
 
-  // Per-tier quantities: this is where the buyer chooses how many tickets.
-  // The event page sends no selection, so it starts at 1 × the first tier. An
-  // old link may carry `sel=tierId:qty,tierId:qty` (or the legacy `tierId=`),
-  // which still seeds it. Editable here.
+  // Per-tier quantities. Seeded from the URL: `sel=tierId:qty,tierId:qty`
+  // (from the event page's ticket selection), with `tierId=` accepted as the
+  // legacy single-tier form. With no selection it starts at 1 × the first tier
+  // that has seats. Always editable here; an order keeps at least one ticket.
   const [lineQty, setLineQty] = useState<Record<string, number>>(() => {
     const validIds = new Set((event.ticketTiers ?? []).map((t) => t.id ?? ""))
     const map: Record<string, number> = {}
