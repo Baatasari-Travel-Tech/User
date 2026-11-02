@@ -180,7 +180,7 @@ export function EventsSearchHero({ cities = [] }: EventsSearchHeroProps) {
         {/* Title with anime.js stagger */}
         <h1
           ref={titleRef}
-          className="mx-auto -mt-18 max-w-4xl whitespace-nowrap text-center font-bricolage text-[clamp(1.4rem,7vw,4.5rem)] font-bold leading-[1.05] tracking-tight text-(--brand-navy) md:mt-20"
+          className="mx-auto -mt-30 max-w-4xl whitespace-nowrap text-center font-bricolage text-[clamp(1.4rem,7vw,4.5rem)] font-bold leading-[1.05] tracking-tight text-(--brand-navy) md:mt-8"
           style={{ perspective: "1000px", textShadow: "0 1px 16px rgba(251,247,240,0.85)" }}
         >
           {titleText.split("").map((c, i) => (
