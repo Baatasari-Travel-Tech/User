@@ -476,7 +476,7 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
 
       <div className="relative">
         {/* Header */}
-        <header className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-4 pt-8 pb-4 md:px-6 md:pt-12 lg:px-10">
+        <header className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-4 pt-12 pb-4 md:px-6 md:pt-20 lg:px-10">
           <button
             onClick={() => router.back()}
             className="group flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-md transition-colors hover:bg-white/20"
@@ -486,7 +486,7 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
           </button>
         </header>
 
-        <main className="mx-auto w-full max-w-[1400px] px-4 py-8 md:px-6 md:py-12 lg:px-10">
+        <main className="mx-auto w-full max-w-[1400px] px-4 pt-10 pb-8 md:px-6 md:pt-14 md:pb-12 lg:px-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
