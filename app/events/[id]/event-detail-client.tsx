@@ -80,9 +80,6 @@ const formatCount = (n: number): string => {
   return String(n)
 }
 
-// Max tickets per booking — mirrors the server-side per-identity cap (A9).
-const MAX_TICKETS_PER_ORDER = 10
-
 // Subtle film grain for the immersive header (breaks digital flatness).
 const NOISE_TEXTURE =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E\")"
@@ -128,7 +125,6 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
 
   const [coverImageSrc, setCoverImageSrc] = useState(getEventCoverImageUrl(event.id, event.updatedAt))
   const [aboutExpanded, setAboutExpanded] = useState(false)
-  const [showTiers, setShowTiers] = useState(false)
 
   // J1 — record a unique daily view of this event page (fire-and-forget).
   useEffect(() => {
@@ -144,41 +140,12 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
     }).catch(() => undefined)
   }, [event.id])
 
-  // ── Tickets: per-tier quantities (multi-tier cart) ──
+  // ── Tickets: the buyer chooses how many on the checkout page ──
   const tiers = useMemo(() => event.ticketTiers ?? [], [event.ticketTiers])
-  const [tierQty, setTierQty] = useState<Record<string, number>>({})
-  const totalQty = useMemo(
-    () => Object.values(tierQty).reduce((sum, n) => sum + n, 0),
-    [tierQty],
-  )
-  const totalPrice = useMemo(
-    () =>
-      tiers.reduce(
-        (sum, t) => sum + (tierQty[t.id ?? ""] ?? 0) * Number(t.price ?? 0),
-        0,
-      ),
-    [tiers, tierQty],
-  )
   // Seats left on a tier, when the API exposes soldCount (undefined ⇒ unknown).
   const tierLeft = (tier: (typeof tiers)[number]): number | null => {
     if (typeof tier.soldCount !== "number" || typeof tier.quantity !== "number") return null
     return Math.max(0, tier.quantity - tier.soldCount)
-  }
-  const adjustTierQty = (tierId: string, delta: number, left: number | null) => {
-    setTierQty((prev) => {
-      const current = prev[tierId] ?? 0
-      const total = Object.values(prev).reduce((sum, n) => sum + n, 0)
-      let next = current
-      if (delta > 0) {
-        const underOrderCap = total < MAX_TICKETS_PER_ORDER
-        const underTierCap = left === null || current < left
-        if (underOrderCap && underTierCap) next = current + 1
-      } else {
-        next = Math.max(0, current - 1)
-      }
-      if (next === current) return prev
-      return { ...prev, [tierId]: next }
-    })
   }
 
   const isFreeEvent = tiers.length > 0 && tiers.every((t) => Number(t.price) === 0)
@@ -284,16 +251,11 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
   const isPast = isEventPast(event)
   const unavailable = isCancelled || isPast
 
-  const goToCheckout = () => {
-    if (unavailable) return
-    if (tiers.length > 0 && totalQty === 0) return
-    // Selection travels as `sel=tierId:qty,tierId:qty` — refresh/share-safe.
-    const sel = tiers
-      .filter((t) => (tierQty[t.id ?? ""] ?? 0) > 0)
-      .map((t) => `${t.id}:${tierQty[t.id ?? ""]}`)
-      .join(",")
-    const selParam = sel ? `&sel=${encodeURIComponent(sel)}` : ""
-    const target = `/checkout?eventId=${event.id}${selParam}`
+  // Straight to checkout: the buyer chooses how many tickets there (it starts
+  // at 1). Logged out → sign in first, then land on checkout.
+  const handleBookCta = () => {
+    if (unavailable || allSoldOut || tiers.length === 0) return
+    const target = `/checkout?eventId=${event.id}`
     if (!isLoggedIn) {
       const params = new URLSearchParams(searchParams?.toString() ?? "")
       params.set("redirect", target)
@@ -302,23 +264,6 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
       return
     }
     router.push(target)
-  }
-
-  const scrollToBooking = () =>
-    document.getElementById("booking-panel")?.scrollIntoView({ behavior: "smooth", block: "center" })
-
-  // Ticket CTA: logged out → login modal (returning here after auth); logged in → reveal the tier picker.
-  const handleBookCta = () => {
-    if (unavailable || allSoldOut || tiers.length === 0) return
-    if (!isLoggedIn) {
-      const params = new URLSearchParams(searchParams?.toString() ?? "")
-      params.set("redirect", pathname)
-      router.replace(`${pathname}?${params.toString()}`)
-      openModal("login")
-      return
-    }
-    setShowTiers(true)
-    requestAnimationFrame(scrollToBooking)
   }
 
   const bookCtaLabel = isLoggedIn ? "Book tickets" : "Login to book"
@@ -638,125 +583,6 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
               </div>
             </motion.div>
 
-            {/* Tier picker — revealed by the CTA once logged in */}
-            {canBook && isLoggedIn && showTiers ? (
-              <motion.div
-                variants={reduce ? undefined : rise}
-                initial="hidden"
-                animate="show"
-                id="booking-panel"
-                className="mt-4 scroll-mt-24 overflow-hidden rounded-[1.75rem] bg-white shadow-[0_30px_70px_-30px_rgba(4,12,28,0.5)]"
-              >
-                <div className="flex items-center justify-between border-b border-(--gray-100) px-6 py-4">
-                  <p className="font-poppins text-sm font-bold text-(--brand-navy)">Select tickets</p>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-(--gold-soft-bg) px-2.5 py-1 text-[11px] font-semibold text-(--gold-text)">
-                    <Ticket className="h-3.5 w-3.5" />
-                    {tiers.length} type{tiers.length > 1 ? "s" : ""}
-                  </span>
-                </div>
-
-                <div className="px-3 py-2">
-                  {tiers.map((tier) => {
-                    const id = tier.id ?? ""
-                    const n = tierQty[id] ?? 0
-                    const selected = n > 0
-                    const left = tierLeft(tier)
-                    const soldOut = left !== null && left <= 0
-                    const price = Number(tier.price ?? 0)
-                    return (
-                      <div
-                        key={id || tier.name}
-                        className={`relative flex items-center justify-between gap-3 rounded-2xl px-3 py-4 transition ${
-                          selected ? "bg-(--gold-soft-bg)/60" : ""
-                        } ${soldOut ? "opacity-55" : ""} [&:not(:last-child)]:border-b [&:not(:last-child)]:border-slate-100`}
-                      >
-                        {selected ? (
-                          <span className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-full bg-(--gold)" />
-                        ) : null}
-                        <div className="min-w-0 pl-2">
-                          <p className="font-semibold text-(--brand-navy)">{tier.name}</p>
-                          {tier.description ? (
-                            <p className="truncate text-xs text-slate-500">{tier.description}</p>
-                          ) : null}
-                          <p className="mt-1 text-sm font-bold tabular-nums text-(--brand-navy)">
-                            {price === 0 ? "Free" : formatCurrency(price)}
-                            {soldOut ? (
-                              <span className="ml-2 text-[11px] font-semibold uppercase text-rose-500">Sold out</span>
-                            ) : left !== null && left <= 10 ? (
-                              <span className="ml-2 text-[11px] font-semibold text-rose-500">only {left} left</span>
-                            ) : null}
-                          </p>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-2.5">
-                          <button
-                            type="button"
-                            onClick={() => adjustTierQty(id, -1, left)}
-                            disabled={n === 0}
-                            aria-label={`Remove one ${tier.name} ticket`}
-                            className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-lg font-bold text-(--brand-navy) transition hover:border-(--brand-navy) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--gold) active:scale-90 disabled:cursor-not-allowed disabled:opacity-30"
-                          >
-                            −
-                          </button>
-                          <span className="w-5 text-center font-bold tabular-nums text-(--brand-navy)" aria-live="polite">
-                            {n}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => adjustTierQty(id, 1, left)}
-                            disabled={soldOut || totalQty >= MAX_TICKETS_PER_ORDER || (left !== null && n >= left)}
-                            aria-label={`Add one ${tier.name} ticket`}
-                            className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-lg font-bold text-(--brand-navy) transition hover:border-(--brand-navy) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--gold) active:scale-90 disabled:cursor-not-allowed disabled:opacity-30"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Summary + checkout */}
-                <div className="border-t border-slate-100 px-6 pb-6 pt-4">
-                  {totalQty > 0 ? (
-                    <div className="mb-4 space-y-1.5 text-sm">
-                      {tiers
-                        .filter((t) => (tierQty[t.id ?? ""] ?? 0) > 0)
-                        .map((t) => (
-                          <div key={t.id ?? t.name} className="flex justify-between text-slate-600">
-                            <span>
-                              {t.name} × {tierQty[t.id ?? ""]}
-                            </span>
-                            <span className="font-medium tabular-nums">
-                              {Number(t.price ?? 0) === 0
-                                ? "Free"
-                                : formatCurrency(Number(t.price ?? 0) * (tierQty[t.id ?? ""] ?? 0))}
-                            </span>
-                          </div>
-                        ))}
-                      <div className="flex justify-between border-t border-dashed border-slate-200 pt-2 font-bold text-(--brand-navy)">
-                        <span>Total</span>
-                        <span className="tabular-nums">{totalPrice === 0 ? "Free" : formatCurrency(totalPrice)}</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="mb-4 text-center text-xs text-slate-400">
-                      Pick your tickets — up to {MAX_TICKETS_PER_ORDER} per booking
-                    </p>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={goToCheckout}
-                    disabled={totalQty === 0}
-                    className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-(--brand-navy) px-6 py-4 font-poppins text-base font-bold text-white shadow-[0_18px_40px_-15px_rgba(12,29,55,0.6)] transition hover:bg-(--brand-navy)/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--gold) active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-45"
-                  >
-                    <Ticket className="h-5 w-5" />
-                    {totalQty === 0 ? "Select tickets" : `Book ${totalQty} ticket${totalQty > 1 ? "s" : ""}`}
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </button>
-                </div>
-              </motion.div>
-            ) : null}
           </div>
         </div>
 
@@ -1143,30 +969,11 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
         </div>
       </div>
 
-      {/* ════ Mobile sticky booking bar — mirrors the tier selection once tickets are picked ════ */}
+      {/* ════ Mobile sticky booking bar ════ */}
       {canBook ? (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-(--gray-200) bg-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md lg:hidden">
           <div className="mx-auto flex max-w-xl items-center justify-between gap-4">
-            {isLoggedIn && showTiers && totalQty > 0 ? (
-              <>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--gray-400)">
-                    Total · {totalQty} ticket{totalQty > 1 ? "s" : ""}
-                  </p>
-                  <p className="font-bricolage text-lg font-bold tabular-nums text-(--brand-navy)">
-                    {totalPrice === 0 ? "Free" : formatCurrency(totalPrice)}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={goToCheckout}
-                  className="shrink-0 rounded-2xl bg-(--brand-navy) px-8 py-3.5 font-poppins text-sm font-bold text-white shadow-[0_14px_30px_-14px_rgba(12,29,55,0.6)] transition hover:bg-(--brand-navy)/90 active:scale-[0.98]"
-                >
-                  Book {totalQty} ticket{totalQty > 1 ? "s" : ""}
-                </button>
-              </>
-            ) : (
-              <>
+            <>
                 <div className="min-w-0">
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-(--gray-400)">
                     {isFreeEvent ? "Entry" : "From"}
@@ -1180,8 +987,7 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
                 >
                   {bookCtaLabel}
                 </button>
-              </>
-            )}
+            </>
           </div>
         </div>
       ) : null}

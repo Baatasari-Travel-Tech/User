@@ -103,9 +103,10 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
   const isLoggedIn = Boolean(session?.user)
   const accountEmail = session?.user?.email ?? ""
 
-  // Per-tier quantities. Seeded from the URL: `sel=tierId:qty,tierId:qty`
-  // (multi-tier, from the event page steppers), with `tierId=` accepted as the
-  // legacy single-tier form. Falls back to 1 × first tier. Still editable here.
+  // Per-tier quantities: this is where the buyer chooses how many tickets.
+  // The event page sends no selection, so it starts at 1 × the first tier. An
+  // old link may carry `sel=tierId:qty,tierId:qty` (or the legacy `tierId=`),
+  // which still seeds it. Editable here.
   const [lineQty, setLineQty] = useState<Record<string, number>>(() => {
     const validIds = new Set((event.ticketTiers ?? []).map((t) => t.id ?? ""))
     const map: Record<string, number> = {}
@@ -128,7 +129,12 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
       if (tierId && validIds.has(tierId)) map[tierId] = 1
     }
     if (Object.keys(map).length === 0) {
-      const first = event.ticketTiers?.[0]?.id
+      // 1 × the first tier that still has seats (a sold-out tier cannot be bought).
+      const tiers = event.ticketTiers ?? []
+      const open = tiers.find(
+        (t) => typeof t.soldCount !== "number" || typeof t.quantity !== "number" || t.quantity > t.soldCount
+      )
+      const first = (open ?? tiers[0])?.id
       if (first) map[first] = 1
     }
     return map
