@@ -291,7 +291,9 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
           ? total >= MAX_TICKETS_PER_ORDER
             ? current
             : current + 1
-          : Math.max(0, current - 1)
+          : total <= 1
+            ? current // the last ticket stays: an order is never 0 tickets
+            : Math.max(0, current - 1)
       if (next === current) return prev
       return { ...prev, [tierId]: next }
     })
@@ -811,7 +813,7 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
                                   <button
                                     type="button"
                                     onClick={() => adjustLineQty(tier.id ?? "", -1)}
-                                    disabled={qty === 0}
+                                    disabled={qty === 0 || totalQty <= 1}
                                     aria-label={`Remove one ${tier.name} ticket`}
                                     className="flex h-8 w-8 items-center justify-center rounded-full border border-(--gray-300) bg-white text-lg font-bold text-(--brand-navy) transition hover:border-(--brand-navy) disabled:cursor-not-allowed disabled:opacity-40"
                                   >
