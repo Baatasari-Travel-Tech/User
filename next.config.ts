@@ -83,10 +83,8 @@ const nextConfig: NextConfig = {
     imageSizes: [384],
     deviceSizes: [640, 828, 1200],
     remotePatterns: [
-      // Public photos now live on R2 behind our own domain (media.baatasari.com);
-      // the Amazon pattern stays until every stored link has been moved.
+      // Public photos live on R2 behind our own domain (media.baatasari.com).
       { protocol: "https", hostname: "media.baatasari.com" },
-      { protocol: "https", hostname: "*.amazonaws.com" },
       { protocol: "https", hostname: "res.cloudinary.com" },
       // Google account profile pictures (seeded as avatar on OAuth signup).
       // Google rotates between lh3, lh4, lh5, lh6, ... subdomains so we
