@@ -60,13 +60,13 @@ export default function Page() {
       <li><strong>Refundable events.</strong> The Organizer chooses, when creating an event, whether it is refundable (most are) or non-refundable. Before you pay, the event page and checkout say which it is. On a <strong>refundable</strong> event you can cancel your whole order yourself from your ticket page, any time until <strong>2 hours before the event starts</strong>. You get the ticket price back <strong>less</strong> a cancellation charge, which is a percentage of the ticket price that grows as the event gets closer (never less than ₹10 per ticket):
         <ul>
         <li>More than 48 hours before the event: 10%</li>
-        <li>24 to 48 hours before: 15%</li>
-        <li>12 to 24 hours before: 25%</li>
-        <li>2 to 12 hours before: 50%</li>
-        <li>Less than 2 hours before, or after the event has started: <strong>no refund</strong></li>
+        <li>More than 24 and up to 48 hours before: 15%</li>
+        <li>More than 12 and up to 24 hours before: 25%</li>
+        <li>More than 2 and up to 12 hours before: 50%</li>
+        <li>2 hours or less before, or after the event has started: <strong>no refund</strong></li>
         </ul>
         Our <strong>platform fee</strong> (₹10 per ticket) and the <strong>payment-gateway charge</strong> you paid are not refunded. Your ticket page shows the exact amount you will get back before you confirm. For example, a ₹500 ticket cancelled 30 hours before the event has a ₹75 charge, so you get ₹425 back. Cancelling an order cancels all its tickets, and the seats go back on sale.</li>
-      <li><strong>Non-refundable events.</strong> A confirmed ticket cannot be cancelled or refunded if you change your mind, cannot attend, arrive late, miss the event, or book the wrong date, type or quantity. (A cancelled event, and a payment that goes wrong on our side, are always refunded in full.)</li>
+      <li><strong>Non-refundable events.</strong> A confirmed ticket cannot be cancelled or refunded if you change your mind, cannot attend, arrive late, miss the event, or book the wrong date, type or quantity. (A cancelled event, and a payment that goes wrong on our side, are always refunded in full.) Nothing in this policy limits any right you have under the Consumer Protection Act, 2019 or other law.</li>
       <li>Part of the cancellation charge is Baatasari’s (10% of the ticket price, at least ₹10 per ticket, inclusive of GST) and the rest goes to the Organizer.</li>
       <li>If you are unhappy with an event itself, raise it with the Organizer first; we will help through the grievance process where we can.</li>
       </ul>
@@ -89,7 +89,7 @@ export default function Page() {
       <li>Where a refund returns our platform fee, we issue a credit note for it, as GST law requires.</li>
       </ul>
       <h2 id="how-to-request" className="scroll-mt-6">9. How to ask for a refund</h2>
-      <p>Write to our Grievance Officer at <a href="mailto:grievance@baatasari.com">grievance@baatasari.com</a> (or raise a ticket from Help while signed in) with the <strong>order number</strong>, the <strong>name of the event or fee</strong>, and the <strong>reason</strong>. A payment reference from your confirmation email speeds things up. We acknowledge within <strong>24 hours</strong> and resolve within <strong>15 days</strong>; see <a href="/grievance">Grievance Redressal</a>.</p>
+      <p>Write to our Grievance Officer at <a href="mailto:grievance@baatasari.com">grievance@baatasari.com</a> (or raise a ticket from Help while signed in) with the <strong>order number</strong>, the <strong>name of the event or fee</strong>, and the <strong>reason</strong>. A payment reference from your confirmation email speeds things up. We acknowledge within <strong>24 hours</strong> and resolve within <strong>7 days</strong>; see <a href="/grievance">Grievance Redressal</a>.</p>
       <h2 id="chargebacks" className="scroll-mt-6">10. Chargebacks</h2>
       <p>Please contact us before disputing a charge with your bank. A dispute that skips our process can take much longer, and tickets on a disputed payment are suspended while it is open.</p>
       <h2 id="organizer-terms" className="scroll-mt-6">11. Event-specific terms</h2>

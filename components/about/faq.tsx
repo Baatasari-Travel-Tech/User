@@ -49,7 +49,7 @@ const FAQ = [
     q: "Is Baatasari safe to pay on?",
     a: (
       <>
-        Payments are processed by Cashfree, and Baatasari never sees or stores your card, UPI or bank details. Baatasari is run by Simha Karthik Reddy (sole proprietor) from Nellore, Andhra Pradesh. Complaints are acknowledged within 24 hours and resolved within 15 days: see{" "}
+        Payments are processed by Cashfree, and Baatasari never sees or stores your card, UPI or bank details. Baatasari is run by Simha Karthik Reddy (sole proprietor) from Nellore, Andhra Pradesh. Complaints are acknowledged within 24 hours and resolved within 7 days: see{" "}
         <Link href="/grievance" className="font-semibold underline underline-offset-2">Grievance Redressal</Link>.
       </>
     ),

@@ -8,7 +8,6 @@ import { motion, useReducedMotion } from "framer-motion"
 import {
   ArrowLeft,
   ArrowRight,
-  BadgeCheck,
   Bus,
   CalendarDays,
   CalendarPlus,
@@ -29,6 +28,7 @@ import {
 } from "lucide-react"
 import { useAuth } from "@/app/providers"
 import { RefundPolicyNotice } from "@/components/refund-policy-notice"
+import { SellerDetails } from "@/components/seller-details"
 import { useAuthModal } from "@/components/auth/auth-modal-context"
 import { ShareEventButton } from "@/components/events/share-event-button"
 import { isEventPast } from "@/lib/event-helpers"
@@ -1037,12 +1037,16 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Hosted by</p>
                 <p className="mt-0.5 flex items-center gap-1.5 font-semibold text-(--brand-navy)">
                   <span className="truncate">{organizerName}</span>
-                  <BadgeCheck className="h-4 w-4 shrink-0 text-(--brand-blue)" />
                 </p>
-                <p className="text-xs text-slate-500">Verified organizer</p>
+                <p className="text-xs text-slate-500">Approved by Baatasari to list events</p>
               </div>
             </motion.section>
           ) : null}
+
+          {/* Sold by: the seller's legal name, address and contact, shown before purchase. */}
+          <SellerDetails seller={event.seller} />
+
+
 
           {/* Quick links — refund · guidelines · contact */}
           <motion.section

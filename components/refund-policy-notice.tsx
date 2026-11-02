@@ -35,7 +35,8 @@ export function RefundPolicyNotice({
         </p>
         <p className="mt-1 text-[13px] leading-relaxed">
           The organizer has set this event as non-refundable, so a confirmed ticket cannot be cancelled or
-          refunded. If the organizer cancels the event, you get a full refund.
+          refunded. If the organizer cancels the event, you get a full refund. Your rights under consumer protection
+          law are not affected.
         </p>
       </div>
     )
@@ -51,7 +52,7 @@ export function RefundPolicyNotice({
     >
       <summary className="flex cursor-pointer list-none items-center gap-2 font-semibold text-emerald-800">
         <RotateCcw className="h-4 w-4 shrink-0" aria-hidden />
-        Refundable: you can cancel until {cutoff} hours before the event
+        Refundable: you can cancel while more than {cutoff} hours remain
         <span className="ml-auto text-xs font-medium text-emerald-700 group-open:hidden">See charges</span>
       </summary>
       <div className="mt-3 space-y-3 text-[13px] leading-relaxed">
@@ -76,7 +77,7 @@ export function RefundPolicyNotice({
                 </tr>
               ))}
               <tr className="border-t border-emerald-100">
-                <td className="px-3 py-2">Less than {cutoff} hours before, or after it starts</td>
+                <td className="px-3 py-2">{cutoff} hours or less before, or after it starts</td>
                 <td className="px-3 py-2 text-right font-medium text-rose-700">No refund</td>
               </tr>
             </tbody>

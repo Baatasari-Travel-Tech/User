@@ -43,7 +43,7 @@ export default function Page() {
         </ol>
       </nav>
       <h2 id="who-we-are" className="scroll-mt-6">1. Who we are</h2>
-      <p>This site, baatasari.com, is run by <strong>Simha Karthik Reddy</strong>, a sole proprietor trading as <strong>BAATASARI</strong> (GSTIN 37HRGPR8105H1ZD), of Sathyamjee Layout, Navalak Gardens, Nellore, Andhra Pradesh – 524002. Under the DPDP Act we are the <strong>data fiduciary</strong> for the personal data described here. Contact us at <a href="mailto:contact-us@baatasari.com">contact-us@baatasari.com</a>; privacy complaints go to our Grievance Officer at <a href="mailto:grievance@baatasari.com">grievance@baatasari.com</a>.</p>
+      <p>This site, baatasari.com, is run by <strong>Simha Karthik Reddy</strong>, a sole proprietor trading as <strong>BAATASARI</strong> (GSTIN 37HRGPR8105H1ZD), of 28/1A-4-145/41, Sathyamjee Layout, Navalak Gardens, Nellore, Andhra Pradesh – 524002. Under the DPDP Act we are the <strong>data fiduciary</strong> for the personal data described here. Contact us at <a href="mailto:contact-us@baatasari.com">contact-us@baatasari.com</a>; privacy complaints go to our Grievance Officer at <a href="mailto:grievance@baatasari.com">grievance@baatasari.com</a>.</p>
       <p>Baatasari runs three sites (baatasari.com, organizer.baatasari.com and venue.baatasari.com) on one account system, so one account and one set of records may be used across them. This notice covers all of them; it is shown on each with the details that matter for that site.</p>
       <h2 id="data-we-collect" className="scroll-mt-6">2. Personal data we collect</h2>
       <p>We collect only what we need for the purposes in the next section. Specifically:</p>
@@ -117,7 +117,7 @@ export default function Page() {
       <h2 id="children" className="scroll-mt-6">11. Children</h2>
       <p>The Platform is for people aged <strong>18 and over</strong>. We do not knowingly collect children’s personal data and we do not offer accounts to anyone under 18. If you believe a child has given us data, tell the Grievance Officer and we will delete it.</p>
       <h2 id="complaints" className="scroll-mt-6">12. Complaints and the Data Protection Board</h2>
-      <p>Please first raise any complaint about your personal data with our Grievance Officer at <a href="mailto:grievance@baatasari.com">grievance@baatasari.com</a>. We acknowledge within 24 hours and aim to resolve it within 15 days, and in any case within the 90 days the DPDP Rules allow at most. If you are not satisfied, you may complain to the Data Protection Board of India under the DPDP Act once it is receiving complaints. More on our <a href="/grievance">Grievance Redressal</a> page.</p>
+      <p>Please first raise any complaint about your personal data with our Grievance Officer at <a href="mailto:grievance@baatasari.com">grievance@baatasari.com</a>. We acknowledge within 24 hours and aim to resolve it within 7 days, and in any case within the 90 days the DPDP Rules allow at most. If you are not satisfied, you may complain to the Data Protection Board of India under the DPDP Act once it is receiving complaints. More on our <a href="/grievance">Grievance Redressal</a> page.</p>
       <h2 id="changes" className="scroll-mt-6">13. Changes to this notice</h2>
       <p>We will update this notice when our practices change. The effective date above shows the latest version, and we tell you about material changes on the Platform and by email.</p>
     </LegalPage>

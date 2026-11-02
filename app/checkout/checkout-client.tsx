@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { TermsDialog } from "@/components/common/terms-dialog"
 import { RefundPolicyNotice } from "@/components/refund-policy-notice"
+import { SellerDetails } from "@/components/seller-details"
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -868,6 +869,9 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
                         </div>
                       )}
                     </div>
+
+                    {/* Who they are buying from, before they pay. */}
+                    <SellerDetails seller={event.seller} compact />
 
                     {/* Refund rules: said plainly before they pay (refundable with the
                         charges, or clearly non-refundable). */}

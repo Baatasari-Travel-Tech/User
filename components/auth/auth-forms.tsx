@@ -482,9 +482,10 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [isPasswordFocused, setIsPasswordFocused] = useState(false)
-  // Consent is implicit by continuing (clickwrap — the notice sits by the
-  // buttons). Organizers sign up on organizer.baatasari.com.
-  const acceptedTerms = true
+  // An unticked box the person must tick: they confirm they are 18 or older
+  // and accept the Terms and Privacy Policy. Organizers sign up on
+  // organizer.baatasari.com.
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
 
   const handleRegister = async () => {
     if (!email || !password || !confirm) {
@@ -495,6 +496,11 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
     const normalizedEmail = email.trim().toLowerCase()
     if (!EMAIL_PATTERN.test(normalizedEmail)) {
       setError('Please enter a valid email address')
+      return
+    }
+
+    if (!acceptedTerms) {
+      setError('Please confirm that you are 18 or older and accept the Terms & Conditions')
       return
     }
 
@@ -513,7 +519,7 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
       await register({
         email: normalizedEmail,
         password,
-        acceptedTerms: true,
+        acceptedTerms,
       })
       closeModal()
       router.replace(resolveAuthDestination(searchParams))
@@ -660,6 +666,26 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
         )
       )}
 
+      <label className="flex cursor-pointer items-start gap-2 text-left text-xs text-slate-600">
+        <input
+          type="checkbox"
+          checked={acceptedTerms}
+          onChange={(e) => setAcceptedTerms(e.target.checked)}
+          className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300"
+        />
+        <span>
+          I am 18 or older, and I agree to the{' '}
+          <a href="/terms-and-conditions" target="_blank" className="font-semibold text-brand-800 underline-offset-2 hover:underline">
+            Terms &amp; Conditions
+          </a>{' '}
+          and{' '}
+          <a href="/privacy-policy" target="_blank" className="font-semibold text-brand-800 underline-offset-2 hover:underline">
+            Privacy Policy
+          </a>
+          .
+        </span>
+      </label>
+
       <button
         onClick={() => void handleRegister()}
         disabled={loading || !email || !password || !confirm || !acceptedTerms}
@@ -686,7 +712,7 @@ export function RegisterForm({ onSwitchMode }: AuthSwitch) {
 
       <div className="space-y-2 text-center text-sm text-slate-500">
         <p className="text-xs">
-            By continuing, you agree to our{' '}
+            Read our{' '}
             <a href="/terms-and-conditions" target="_blank" className="font-semibold text-brand-800 underline-offset-2 hover:underline">
               Terms &amp; Conditions
             </a>{' '}

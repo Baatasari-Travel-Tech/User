@@ -272,9 +272,21 @@ export type RefundPolicy = {
   tiers: Array<{ label: string; chargePct: number }>;
 };
 
+// The seller details shown before purchase (Consumer Protection (E-Commerce)
+// Rules): the organizer's legal name, address and contact details.
+export type SellerDetails = {
+  legalName: string | null;
+  tradeName: string | null;
+  address: string | null;
+  email: string | null;
+  phone: string | null;
+  gstin: string | null;
+};
+
 export type EventDetail = EventSummary & {
   ticketTiers: OrganizerEventTicketTier[];
   refundPolicy?: RefundPolicy;
+  seller?: SellerDetails;
 };
 
 // What cancelling an order would refund right now (GET /user/history/:id).
