@@ -27,8 +27,8 @@ export default function Page() {
   return (
     <LegalPage
       title="Privacy Policy"
-      standfirst="Effective 22 October 2026. This notice explains, in plain language, what personal data we collect, why, who gets it, how long we keep it, and what you can do. It follows the Digital Personal Data Protection Act, 2023 (“DPDP Act”) and its Rules, 2025."
-      updated="22 October 2026"
+      standfirst="Effective 4 November 2026. This notice explains, in plain language, what personal data we collect, why, who gets it, how long we keep it, and what you can do. It follows the Digital Personal Data Protection Act, 2023 (“DPDP Act”) and its Rules, 2025."
+      updated="4 November 2026"
     >
       <nav aria-label="Contents">
         <p>
@@ -80,6 +80,7 @@ export default function Page() {
       <li><strong>Payment gateway (Cashfree):</strong> to take payments and make refunds. You give your payment details directly to them.</li>
       <li><strong>Service providers who process data for us:</strong> Hetzner (our servers and database), Cloudflare (website delivery, security, analytics and storage of uploaded images and documents) and our own mail server (email). They act on our instructions under their service terms and must keep the data secure.</li>
       <li><strong>Microsoft (Clarity):</strong> on most pages of baatasari.com, Microsoft Clarity records how pages are used, such as clicks, scrolling and page flow, so we can improve the design. It is not used on checkout, your profile, or the password-reset and sign-in return pages, and text you type, other text on the page and your ticket QR codes are hidden from the recording. See section 7.</li>
+      <li><strong>OpenStreetMap:</strong> on an event page, the small map of the venue is loaded from OpenStreetMap. Your browser contacts OpenStreetMap to fetch it, so it receives your IP address and the map area shown. We send nothing else about you to it.</li>
       <li><strong>Google:</strong> if you choose “Sign in with Google”, sign-in is handled by Google under its own privacy policy.</li>
       <li><strong>Authorities:</strong> where the law, a court order or a lawful request requires, or to protect the rights and safety of users or the public.</li>
       </ul>
