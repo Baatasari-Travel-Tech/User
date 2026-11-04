@@ -34,7 +34,7 @@ export const getEventCoverImageUrl = (eventId: string, version?: string | number
 }
 
 /**
- * Width of the smaller cover the backend writes alongside the 1000x1500 one.
+ * Width of the smaller cover the backend writes alongside the 1000px one.
  * Must match EVENT_COVER_SMALL_WIDTH in the backend's config/s3.ts — the key
  * contains the number, so a mismatch is a 404 rather than a wrong size.
  */

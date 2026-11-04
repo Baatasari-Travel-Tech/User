@@ -28,7 +28,7 @@ import { VARIANT_SOURCES, VARIANT_WIDTHS } from "./image-variants"
 const EVENT_COVER = /\/events\/[^/]+\/cover\.webp(\?|$)/
 
 export default function imageLoader({ src, width }: { src: string; width: number }): string {
-  // Event covers exist at exactly two widths: 500 and the stored 1000x1500.
+  // Event covers exist at exactly two widths: 500 and the stored 1000px.
   // Anything a phone-sized `sizes` asks for takes the small one, which is
   // roughly a third of the bytes — measured across the live events at the time
   // this shipped: 165K->50K, 217K->77K, 286K->92K.
