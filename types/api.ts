@@ -239,7 +239,17 @@ export type EventSummary = {
   reEntryAllowed: boolean | null;
   parkingAvailable: boolean | null;
   transportOptions: Record<string, boolean>;
-  artists: Array<{ name: string; genre?: string | null }>;
+  // An artist is a name the organizer typed, or a performer picked from our talent
+  // directory (talentSlug, photoUrl and category then come from their profile).
+  artists: Array<{
+    name: string;
+    genre?: string | null;
+    role?: string | null;
+    talentSlug?: string | null;
+    photoUrl?: string | null;
+  }>;
+  // Languages the event is in, picked from a list when the organizer creates it.
+  languages?: string[];
   sponsors: EventSponsorGroups;
   requirements: EventRequirements;
   postEventFollowUp: EventPostEventFollowUp;
@@ -260,6 +270,8 @@ export type EventSummary = {
   bookedCount?: number;
   ticketTierCount?: number;
   organizerDisplayName?: string | null;
+  // How many events this organizer has put on (published, not cancelled).
+  organizerEventCount?: number;
   // Buyers can cancel their own order (refundable event). Absent until the
   // Backend that sends it is deployed, so treat a missing value as "unknown".
   refundable?: boolean;

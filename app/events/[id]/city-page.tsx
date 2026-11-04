@@ -1,10 +1,10 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { EventGrid } from "@/components/events/event-grid"
-import { SiteFooter } from "@/components/site-footer"
+import { EventCard } from "@/components/events/event-card"
+import { EventsFooter } from "@/components/events/events-footer"
 import { groupCities, type CityGroup } from "@/lib/cities"
 import { fetchAllPublishedEvents } from "@/lib/events-server"
-import { getEventPhase, toEventCardData } from "@/lib/event-helpers"
+import { getEventPhase } from "@/lib/event-helpers"
 import { jsonLdString } from "@/lib/faq-schema"
 import { SITE_ORIGIN, breadcrumbJsonLd } from "@/lib/seo"
 
@@ -63,7 +63,7 @@ export async function CityEventsPage({ slug }: { slug: string }) {
   const cards = [...city.events]
     .map((event) => ({ event, ...getEventPhase(event) }))
     .sort((a, b) => (a.phase === b.phase ? a.sort - b.sort : a.phase === "ongoing" ? -1 : 1))
-    .map(({ event }) => toEventCardData(event))
+    .map(({ event }) => event)
 
   const jsonLd = [
     breadcrumbJsonLd([
@@ -105,7 +105,13 @@ export async function CityEventsPage({ slug }: { slug: string }) {
         <p className="mt-3 max-w-3xl text-base leading-relaxed text-(--gray-700)">{intro(city)}</p>
       </section>
 
-      <EventGrid events={cards} title={`Events in ${city.name}`} hideHeader />
+      <section className="page-x-wide py-8 md:py-10">
+        <div className="grid grid-cols-1 gap-x-6 gap-y-9 sm:grid-cols-2 lg:grid-cols-4">
+          {cards.map((event, index) => (
+            <EventCard key={event.id} event={event} priority={index < 4} />
+          ))}
+        </div>
+      </section>
 
       <section className="page-x-wide pb-14">
         <h2 className="text-lg font-semibold text-(--brand-blue)">Looking elsewhere?</h2>
@@ -124,7 +130,7 @@ export async function CityEventsPage({ slug }: { slug: string }) {
           ))}
         </ul>
       </section>
-      <SiteFooter />
+      <EventsFooter />
     </main>
   )
 }

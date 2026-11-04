@@ -189,3 +189,29 @@ export async function fetchPublicEvents(): Promise<{ events: EventSummary[]; err
     return { events: [], error: true }
   }
 }
+
+// "FRI · 7 NOV" for the date chip on an event card (India time, so the server
+// and the browser always agree on the day).
+export function formatCardChip(date: string): string {
+  const d = new Date(date)
+  if (Number.isNaN(d.getTime())) return ""
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    timeZone: "Asia/Kolkata",
+  }).formatToParts(d)
+  const pick = (type: string) => parts.find((p) => p.type === type)?.value ?? ""
+  return `${pick("weekday")} · ${pick("day")} ${pick("month")}`.toUpperCase()
+}
+
+export type EventTab = "live" | "upcoming" | "past"
+
+// Which tab of the events list an event belongs to: happening today or over
+// several days (live now), still to come (upcoming), or finished (past).
+export function eventTab(event: Pick<EventSummary, "date" | "endDate">): EventTab {
+  const { phase } = getEventPhase(event)
+  if (phase === "ongoing") return "live"
+  if (phase === "upcoming") return "upcoming"
+  return "past"
+}

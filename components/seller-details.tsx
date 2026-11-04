@@ -11,11 +11,14 @@ import type { SellerDetails as Seller } from "@/types/api"
 export function SellerDetails({
   seller,
   compact = false,
+  bare = false,
   className = "",
 }: {
   seller: Seller | null | undefined
   /** One short line each, for the checkout summary. */
   compact?: boolean
+  /** No box of its own: it sits inside another card. */
+  bare?: boolean
   className?: string
 }) {
   if (!seller?.legalName) return null
@@ -52,7 +55,7 @@ export function SellerDetails({
   return (
     <section
       aria-label="Seller details"
-      className={`rounded-2xl border border-(--gray-200) bg-white px-4 py-3 text-sm text-(--gray-700) ${className}`}
+      className={`${bare ? "" : "rounded-2xl border border-(--gray-200) bg-white px-4 py-3"} text-sm text-(--gray-700) ${className}`}
     >
       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Sold by</p>
       <dl className={`mt-2 grid gap-x-4 gap-y-1 ${compact ? "text-xs" : "text-sm"} sm:grid-cols-[7rem_1fr]`}>
