@@ -92,7 +92,7 @@ function EventsPageContent() {
   const eventsQuery = useQuery({ queryKey: ["public-events"], queryFn: fetchAllEvents, staleTime: 60_000 })
   const data = eventsQuery.data
 
-  // The tab the visitor picked; until then, the first tab that has something in it.
+  // The tab the visitor picked; until then, Live now (never Past events).
   const [chosenTab, setChosenTab] = useState<EventTab | null>(null)
   const [shown, setShown] = useState(FIRST_PAGE)
   const [phoneExpanded, setPhoneExpanded] = useState(false)
@@ -163,9 +163,7 @@ function EventsPageContent() {
     return groups
   }, [filtered])
 
-  const tab: EventTab =
-    chosenTab ??
-    (byTab.upcoming.length > 0 ? "upcoming" : byTab.live.length > 0 ? "live" : byTab.past.length > 0 ? "past" : "upcoming")
+  const tab: EventTab = chosenTab ?? "live"
 
   const choose = (next: EventTab) => {
     setChosenTab(next)
