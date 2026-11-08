@@ -560,15 +560,6 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
                       </div>
                     </div>
                   </div>
-
-                  {isFreeEvent || isLoggedIn ? (
-                    <div className="flex flex-col gap-1 border-t border-white/10 bg-white/5 p-5 md:items-center md:justify-center md:border-l md:border-t-0 md:px-8">
-                      <span className="text-xs uppercase tracking-wider text-white/60">Ticket price</span>
-                      <span className="font-bricolage text-2xl font-bold text-white">
-                        {isFreeEvent ? "Free" : formatCurrency(subtotal)}
-                      </span>
-                    </div>
-                  ) : null}
                 </div>
               </div>
 
