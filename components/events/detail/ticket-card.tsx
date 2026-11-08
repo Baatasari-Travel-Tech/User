@@ -40,6 +40,7 @@ export function TicketCard({
   state,
   onBook,
   onViewRefund,
+  isLoggedIn,
   calendarEvent,
 }: {
   tiers: Tier[]
@@ -56,6 +57,8 @@ export function TicketCard({
   onBook: () => void
   /** Opens the refund rules row further down the page. */
   onViewRefund: () => void
+  /** Signed out: the button says Register to book. */
+  isLoggedIn: boolean
   calendarEvent: CalendarEvent
 }) {
   if (state === "cancelled" || state === "ended") {
@@ -77,7 +80,8 @@ export function TicketCard({
     )
   }
 
-  const buttonLabel = state === "sold-out" ? "Sold out" : totalQty === 0 ? "Select tickets" : "Book tickets"
+  const buttonLabel =
+    state === "sold-out" ? "Sold out" : totalQty === 0 ? "Select tickets" : isLoggedIn ? "Book tickets" : "Register to book"
   const disabled = state !== "open" || totalQty === 0
 
   return (

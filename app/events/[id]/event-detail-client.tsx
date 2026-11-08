@@ -227,7 +227,7 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
       const params = new URLSearchParams(searchParams?.toString() ?? "")
       params.set("redirect", target)
       router.replace(`${pathname}?${params.toString()}`)
-      openModal("login")
+      openModal("register")
       return
     }
     router.push(target)
@@ -391,6 +391,7 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
               state={ticketState}
               onBook={goToCheckout}
               onViewRefund={viewRefund}
+              isLoggedIn={isLoggedIn}
               calendarEvent={calendarEvent}
             />
           </div>
@@ -590,7 +591,7 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
               onClick={handleBarBook}
               className="h-12 shrink-0 rounded-full bg-(--brand-navy) px-8 text-[15px] font-semibold text-white shadow-[0_14px_30px_-14px_rgba(12,29,55,0.6)] transition hover:bg-(--brand-navy)/90 active:scale-[0.98]"
             >
-              {totalQty > 0 ? "Book tickets" : "Select tickets"}
+              {totalQty > 0 ? (isLoggedIn ? "Book tickets" : "Register to book") : "Select tickets"}
             </button>
           </div>
         </div>

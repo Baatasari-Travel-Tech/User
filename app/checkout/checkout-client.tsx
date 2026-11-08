@@ -97,7 +97,7 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const { session, user, profile } = useAuth()
+  const { session, profile } = useAuth()
   const { open, openModal } = useAuthModal()
 
   const isLoggedIn = Boolean(session?.user)
@@ -385,10 +385,6 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
         // Route by ORDER id — the confirmation page accepts it and shows every
         // ticket on the order (one per tier line).
         const ticketHref = `/order-confirmed/${order.orderId}`
-        if (user?.onboardingStatus !== "COMPLETED") {
-          router.push(`/onboarding?next=${encodeURIComponent(ticketHref)}`)
-          return
-        }
         router.push(ticketHref)
         return
       }
@@ -426,10 +422,6 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
         })
         setCheckoutSuccess("Payment verified successfully.")
         const ticketHref = `/order-confirmed/${order.orderId}`
-        if (user?.onboardingStatus !== "COMPLETED") {
-          router.push(`/onboarding?next=${encodeURIComponent(ticketHref)}`)
-          return
-        }
         router.push(ticketHref)
       } catch (verifyError) {
         setCheckoutError(

@@ -16,6 +16,7 @@ import { LifeBuoy,
 } from 'lucide-react'
 import { DEFAULT_AVATAR_IMAGE } from '@/lib/avatar'
 import { resolveUserHome } from '@/lib/auth/navigation'
+import { CompleteProfileBanner } from '@/components/complete-profile-banner'
 import { AuthModalRoot } from '@/components/auth/auth-modal'
 import { useAuthModal } from '@/components/auth/auth-modal-context'
 import { useMaintenance } from '@/hooks/use-maintenance'
@@ -554,6 +555,7 @@ function SiteShellContent({ children }: { children: React.ReactNode }) {  const
           </nav>
         )}
       </header>
+      <CompleteProfileBanner />
 
       <main className="min-h-[70dvh]">{children}</main>
     </div>

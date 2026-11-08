@@ -16,7 +16,9 @@ type ProtectedRouteProps = {
 // organizer.baatasari.com, which has its own RequireOrganizer gate.)
 export function ProtectedRoute({
   children,
-  requireOnboarding = true,
+  // Off by default: a new account can use My tickets, an invoice and a ticket page
+  // before it has finished onboarding (the site nags with a banner instead).
+  requireOnboarding = false,
   requireTalentPaid = false,
 }: ProtectedRouteProps) {
   const router = useRouter()
