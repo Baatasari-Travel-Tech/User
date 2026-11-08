@@ -33,5 +33,14 @@
       "binding": "NEXT_INC_CACHE_KV",
       "id": "7ee7c338c89d4ebc99b136ee5a541dc4"
     }
+  ],
+
+  // The Worker calling itself: how a stale cached page is refreshed in the
+  // background (open-next.config.ts, memory queue). The name must match "name".
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "user"
+    }
   ]
 }

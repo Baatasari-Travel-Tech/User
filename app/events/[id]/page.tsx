@@ -34,9 +34,9 @@ const buildShareDescription = (event: EventDetail): string => {
 async function fetchEvent(id: string): Promise<EventDetail | null> {
   try {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? ""
-    const res = await fetch(`${base}/api/v1/events/${id}`, {
-      next: { revalidate: 60 },
-    })
+    // Always fresh: a saved copy kept ticket ids from before an organizer edit
+    // (an edit replaces the ticket types), and bookings then failed.
+    const res = await fetch(`${base}/api/v1/events/${id}`, { cache: "no-store" })
     if (!res.ok) return null
     const json = (await res.json()) as { data?: { event?: EventDetail } }
     return json.data?.event ?? null
