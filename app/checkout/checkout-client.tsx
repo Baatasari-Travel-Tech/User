@@ -459,77 +459,149 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
   /* eslint-enable react-hooks/refs */
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto w-full max-w-[1100px] px-4 pb-16 pt-6 md:px-6 md:pt-10 lg:px-8">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-(--brand-navy) hover:underline"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden />
-          Back
-        </button>
+    <div className="relative min-h-screen">
+      {/* Background: a fixed, still layer (no animation, no blur filters) */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(60rem_40rem_at_0%_0%,rgba(37,99,235,0.30),transparent_60%),radial-gradient(60rem_40rem_at_100%_100%,rgba(56,189,248,0.22),transparent_60%),linear-gradient(135deg,#0c1d37,#142a4f_55%,#1a3a6b)]"
+      />
 
-        <h1 className="mt-5 font-bricolage text-[2rem] font-bold leading-tight tracking-tight text-(--brand-navy) md:text-4xl">
-          Complete your booking
-        </h1>
-        <p className="mt-2 text-[15px] text-(--gray-500)">
-          Review your details and confirm your tickets for{" "}
-          <span className="font-semibold text-(--brand-navy)">{event.title}</span>.
-        </p>
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="mx-auto flex w-full max-w-[1400px] items-center justify-between px-4 pb-4 pt-16 md:px-6 md:pt-24 lg:px-10">
+          <button
+            onClick={() => router.back()}
+            className="group flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/20"
+          >
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+            Back
+          </button>
+        </header>
 
-        {/* The event being booked */}
-        <section className="mt-6 overflow-hidden rounded-3xl bg-white shadow-[0_24px_60px_-32px_rgba(12,29,55,0.4)]">
-          <div className="flex flex-col md:flex-row">
-            <div className="relative aspect-[16/10] w-full md:aspect-auto md:w-72 md:shrink-0">
-              <Image
-                src={coverImageSrc}
-                alt={event.title}
-                fill
-                sizes="(min-width: 768px) 288px, 100vw"
-                className="object-cover"
-                onError={() => setCoverImageSrc("/an2.webp")}
-              />
-            </div>
-            <div className="flex-1 p-5 md:p-6">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-(--gold-text)">You&apos;re booking</p>
-              <h2 className="mt-1 text-xl font-semibold leading-snug text-(--brand-navy)">{event.title}</h2>
-              <div className="mt-4 grid gap-4 text-sm md:grid-cols-3">
-                <div className="flex items-start gap-3">
-                  <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-(--gold-icon)" aria-hidden />
-                  <div>
-                    <p className="text-[11px] text-(--gray-400)">Date &amp; time</p>
-                    <p className="font-semibold text-(--brand-navy)">
-                      {formatDate(event.date)} · {event.startTime ?? "8 AM"}
-                    </p>
+        <main className="mx-auto w-full max-w-[1400px] px-4 py-8 md:px-6 md:py-12 lg:px-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mx-auto max-w-6xl"
+          >
+            <h1 className="font-bricolage text-3xl font-bold text-white md:text-5xl">
+              Complete your booking
+            </h1>
+            <p className="mt-2 max-w-xl text-sm text-white/70 md:text-base">
+              Review your details and confirm your tickets for{" "}
+              <span className="font-semibold text-white">{event.title}</span>.
+            </p>
+          </motion.div>
+
+          <div className="mx-auto mt-8 max-w-6xl space-y-6">
+            {/* TOP — Event summary card */}
+            <motion.aside
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.1 }}
+            >
+              <div className="overflow-hidden rounded-3xl border border-white/15 bg-white/10 shadow-2xl">
+                <div className="flex flex-col md:flex-row">
+                  <div className="relative h-44 w-full overflow-hidden md:h-auto md:w-72 md:shrink-0">
+                    <Image
+                      src={coverImageSrc}
+                      alt={event.title}
+                      fill
+                      className="object-cover"
+                      onError={() => setCoverImageSrc("/an2.webp")}
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-(--brand-navy)/80 to-transparent md:bg-linear-to-r" />
+                    <div className="absolute inset-x-0 bottom-0 p-4 md:hidden">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-sky-200/90">
+                        You&apos;re booking
+                      </p>
+                      <h3 className="font-bricolage text-lg font-bold leading-tight text-white">
+                        {event.title}
+                      </h3>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-(--gold-icon)" aria-hidden />
-                  <div>
-                    <p className="text-[11px] text-(--gray-400)">Venue</p>
-                    <p className="font-semibold text-(--brand-navy)">{event.venue ?? "TBA"}</p>
+
+                  <div className="flex-1 p-5 md:p-6">
+                    <div className="hidden md:block">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-sky-200/90">
+                        You&apos;re booking
+                      </p>
+                      <h3 className="mt-1 font-bricolage text-xl font-bold leading-tight text-white">
+                        {event.title}
+                      </h3>
+                    </div>
+
+                    <div className="grid gap-3 text-sm text-white/90 md:mt-4 md:grid-cols-3">
+                      <div className="flex items-start gap-3">
+                        <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-sky-300" />
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
+                            Date & Time
+                          </p>
+                          <p className="font-semibold">
+                            {formatDate(event.date)} · {event.startTime ?? "8 AM"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-sky-300" />
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
+                            Venue
+                          </p>
+                          <p className="font-semibold">{event.venue ?? "TBA"}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <Ticket className="mt-0.5 h-4 w-4 shrink-0 text-sky-300" />
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
+                            Tickets
+                          </p>
+                          <p className="font-semibold">
+                            {lines.length > 0
+                              ? lines.map((l) => `${l.qty} × ${l.tier.name}`).join(" · ")
+                              : "—"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Ticket className="mt-0.5 h-4 w-4 shrink-0 text-(--gold-icon)" aria-hidden />
-                  <div>
-                    <p className="text-[11px] text-(--gray-400)">Tickets</p>
-                    <p className="font-semibold text-(--brand-navy)">
-                      {lines.length > 0 ? lines.map((l) => `${l.qty} × ${l.tier.name}`).join(" · ") : "—"}
-                    </p>
-                  </div>
+
+                  {isFreeEvent || isLoggedIn ? (
+                    <div className="flex flex-col gap-1 border-t border-white/10 bg-white/5 p-5 md:items-center md:justify-center md:border-l md:border-t-0 md:px-8">
+                      <span className="text-xs uppercase tracking-wider text-white/60">Ticket price</span>
+                      <span className="font-bricolage text-2xl font-bold text-white">
+                        {isFreeEvent ? "Free" : formatCurrency(subtotal)}
+                      </span>
+                    </div>
+                  ) : null}
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
 
-        <form onSubmit={onSubmit} noValidate className="relative mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
-          {/* Left: who and how many. Dimmed (not blurred) until the visitor signs in. */}
-          <div className={`space-y-6 ${!isLoggedIn ? "pointer-events-none select-none opacity-40" : ""}`}>
-            <div className="rounded-3xl bg-white p-5 shadow-[0_24px_60px_-32px_rgba(12,29,55,0.4)] md:p-7">
-              <section className="space-y-4">
+              <p className="mt-4 flex items-center justify-center gap-2 text-xs text-white/60">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />
+                256-bit SSL encryption · PCI compliant
+              </p>
+            </motion.aside>
+
+            {/* Form (foggy when not logged in) */}
+            <div className="relative">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.1 }}
+                className={`relative overflow-hidden rounded-3xl border border-white/15 bg-white/[0.07] p-1 shadow-2xl`}
+              >
+                <div
+                  className={`rounded-[1.4rem] bg-white p-6 md:p-8 transition-all duration-500 ${
+                    !isLoggedIn ? "pointer-events-none select-none opacity-30" : ""
+                  }`}
+                >
+                  <form onSubmit={onSubmit} className="space-y-7" noValidate>
+                    {/* Personal */}
+                    <section className="space-y-4">
                       <div className="flex flex-col gap-3 border-b border-(--gray-200) pb-3 sm:flex-row sm:items-center sm:justify-between">
                         <h3 className="text-base font-semibold text-(--brand-navy) sm:text-lg">
                           Personal Details
@@ -693,9 +765,9 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
                         ) : null}
                       </AnimatePresence>
                     </section>
-            </div>
-            <div className="rounded-3xl bg-white p-5 shadow-[0_24px_60px_-32px_rgba(12,29,55,0.4)] md:p-7">
-              <section className="space-y-4">
+
+                    {/* Booking */}
+                    <section className="space-y-4">
                       <h3 className="border-b border-(--gray-200) pb-2 text-base font-semibold text-(--brand-navy) sm:text-lg">
                         Booking Details
                       </h3>
@@ -758,14 +830,10 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
                         </div>
                       </div>
                     </section>
-            </div>
-          </div>
 
-          {/* Right: the money, who is selling, the rules, and the Pay button */}
-          <aside className={`lg:sticky lg:top-24 lg:self-start ${!isLoggedIn ? "pointer-events-none select-none opacity-40" : ""}`}>
-            <div className="rounded-3xl bg-white p-5 shadow-[0_24px_60px_-32px_rgba(12,29,55,0.4)] md:p-7">
-              <div className="rounded-2xl bg-(--gray-50) p-4">
-                      <h3 className="mb-4 text-lg font-semibold text-(--brand-navy)">Order Summary</h3>
+                    {/* Order summary card */}
+                    <div className="rounded-2xl border-2 border-(--brand-navy) bg-(--white) p-4 shadow-lg">
+                      <h3 className="mb-4 text-center text-xl font-bold text-(--brand-navy)">Order Summary</h3>
                       {isFreeEvent ? (
                         <div className="py-2 text-center">
                           <span className="text-3xl font-bold text-emerald-600">Free</span>
@@ -801,8 +869,8 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
                         </div>
                       )}
                     </div>
-              <div className="mt-5 space-y-5">
-                {/* Who they are buying from, before they pay. */}
+
+                    {/* Who they are buying from, before they pay. */}
                     <SellerDetails seller={event.seller} compact />
 
                     {/* Refund rules: said plainly before they pay (refundable with the
@@ -881,58 +949,75 @@ export default function CheckoutClient({ event }: { event: EventDetail }) {
                               ? "Get Free Ticket"
                               : "Pay Now"}
                     </motion.button>
-                <p className="flex items-center justify-center gap-2 text-center text-xs text-(--gray-500)">
-                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" aria-hidden />
-                  Paid securely through Cashfree. We never see your card or UPI details.
-                </p>
-              </div>
-            </div>
-          </aside>
-
-          {/* Sign-in card over the dimmed form */}
-          <AnimatePresence>
-            {!isLoggedIn ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="absolute inset-0 z-20 flex items-start justify-center px-2 pt-6 md:pt-12"
-              >
-                <div className="w-full max-w-md rounded-3xl border border-(--gray-200) bg-white p-7 shadow-[0_30px_80px_-30px_rgba(12,29,55,0.45)]">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-(--brand-navy) text-white">
-                    <Lock className="h-6 w-6" aria-hidden />
-                  </div>
-                  <p className="mt-5 text-center text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">
-                    Login required
-                  </p>
-                  <h3 className="mt-2 text-center font-bricolage text-2xl font-bold text-slate-900">Sign in to checkout</h3>
-                  <p className="mt-2 text-center text-sm text-slate-600">
-                    Securely complete your booking for <span className="font-semibold text-slate-800">{event.title}</span>.
-                  </p>
-                  <div className="mt-6 grid grid-cols-2 gap-3">
-                    <Button
-                      type="button"
-                      onClick={() => openBookingAuthModal("login")}
-                      className="rounded-xl border border-slate-200 bg-white text-slate-800 shadow-sm hover:bg-slate-50"
-                    >
-                      <LogIn className="mr-2 h-4 w-4" />
-                      Login
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={() => openBookingAuthModal("register")}
-                      className="rounded-xl bg-(--brand-navy) text-white hover:bg-(--brand-navy)/90"
-                    >
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      Register
-                    </Button>
-                  </div>
+                  </form>
                 </div>
               </motion.div>
-            ) : null}
-          </AnimatePresence>
-        </form>
+
+              {/* Fog overlay + login card */}
+              <AnimatePresence>
+                {!isLoggedIn ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="absolute inset-0 z-20 flex items-center justify-center rounded-3xl"
+                  >
+                    {/* Extra fog layers */}
+                    <div className="absolute inset-0 rounded-3xl bg-white/40" />
+                    <div className="absolute inset-0 rounded-3xl bg-linear-to-br from-white/30 via-white/10 to-white/40" />
+
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ delay: 0.15, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                      className="relative mx-4 w-full max-w-md rounded-3xl border border-white/30 bg-white p-7 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.35)]"
+                    >
+                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-(--brand-navy) text-white shadow-lg shadow-(--brand-navy)/30">
+                        <Lock className="h-6 w-6" />
+                      </div>
+                      <p className="mt-5 text-center text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500">
+                        Login required
+                      </p>
+                      <h3 className="mt-2 text-center font-bricolage text-2xl font-bold text-slate-900">
+                        Sign in to checkout
+                      </h3>
+                      <p className="mt-2 text-center text-sm text-slate-600">
+                        Securely complete your booking for{" "}
+                        <span className="font-semibold text-slate-800">{event.title}</span>.
+                      </p>
+
+                      <div className="mt-6 grid grid-cols-2 gap-3">
+                        <Button
+                          type="button"
+                          onClick={() => openBookingAuthModal("login")}
+                          className="rounded-xl border border-slate-200 bg-white text-slate-800 shadow-sm hover:bg-slate-50"
+                        >
+                          <LogIn className="mr-2 h-4 w-4" />
+                          Login
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => openBookingAuthModal("register")}
+                          className="rounded-xl bg-(--brand-navy) text-white hover:bg-(--brand-navy)/90"
+                        >
+                          <UserPlus className="mr-2 h-4 w-4" />
+                          Register
+                        </Button>
+                      </div>
+
+                      <div className="mt-5 flex items-center justify-center gap-2 text-[11px] text-slate-500">
+                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                        Your information is encrypted end-to-end.
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
+
+          </div>
+        </main>
       </div>
     </div>
   )
