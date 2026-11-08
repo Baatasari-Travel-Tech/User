@@ -21,42 +21,49 @@ export function directionsUrl(event: EventDetail): string | null {
 }
 
 /**
- * A small map of the venue. With the venue's coordinates it is a real
- * OpenStreetMap view (nothing to click inside it: the whole tile opens
- * directions instead, so it never traps scrolling on a phone). Without
- * coordinates it is a quiet map-style tile with a pin.
+ * A small map of the venue, from Google Maps: the venue's coordinates when the
+ * organizer's location search gave them, otherwise a search for the venue name
+ * and city. On a wide screen you can move it; on a phone the whole tile opens
+ * directions instead, so a swipe down the page never gets stuck inside the map.
  */
 function VenueMap({ event, href }: { event: EventDetail; href: string | null }) {
   const lat = event.locationLat
   const lng = event.locationLng
   const hasCoords = typeof lat === "number" && typeof lng === "number"
-  const box = "relative h-40 w-full overflow-hidden rounded-2xl border border-(--gray-200) bg-(--gold-bar-bg) md:h-full md:min-h-[170px]"
+  const query = hasCoords ? `${lat},${lng}` : [event.venue, event.locationCity].filter(Boolean).join(", ")
+  const box = "relative h-44 w-full overflow-hidden rounded-2xl border border-(--gray-200) bg-(--gold-bar-bg) md:h-full md:min-h-[190px]"
 
-  const inner = hasCoords ? (
-    <>
+  if (!query.trim()) {
+    return (
+      <div className={box}>
+        <div className="flex h-full w-full items-center justify-center">
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-(--brand-navy) text-white shadow-lg">
+            <MapPin className="h-5 w-5" aria-hidden />
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className={box}>
       <iframe
         title={`Map of ${event.venue}`}
-        src={`https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.006}%2C${lat - 0.004}%2C${lng + 0.006}%2C${lat + 0.004}&layer=mapnik&marker=${lat}%2C${lng}`}
+        src={`https://www.google.com/maps?q=${encodeURIComponent(query)}&z=15&output=embed`}
         loading="lazy"
-        referrerPolicy="no-referrer"
-        className="pointer-events-none h-full w-full border-0"
+        referrerPolicy="no-referrer-when-downgrade"
+        className="pointer-events-none h-full w-full border-0 md:pointer-events-auto"
       />
-      <span className="absolute inset-0" aria-hidden />
-    </>
-  ) : (
-    <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,var(--gold-bar-bg),#e9eef5)]">
-      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-(--brand-navy) text-white shadow-lg">
-        <MapPin className="h-5 w-5" aria-hidden />
-      </span>
+      {href ? (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open the venue in maps"
+          className="absolute inset-0 md:hidden"
+        />
+      ) : null}
     </div>
-  )
-
-  return href ? (
-    <a href={href} target="_blank" rel="noopener noreferrer" aria-label="Open the venue in maps" className={box}>
-      {inner}
-    </a>
-  ) : (
-    <div className={box}>{inner}</div>
   )
 }
 

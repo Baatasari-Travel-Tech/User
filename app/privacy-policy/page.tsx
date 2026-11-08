@@ -42,10 +42,10 @@ export default function Page() {
           ))}
         </ol>
       </nav>
-      <h2 id="who-we-are" className="scroll-mt-6">1. Who we are</h2>
+      <h2 id="who-we-are" className="scroll-mt-[35vh]">1. Who we are</h2>
       <p>This site, baatasari.com, is run by <strong>Simha Karthik Reddy</strong>, a sole proprietor trading as <strong>BAATASARI</strong> (GSTIN 37HRGPR8105H1ZD), of 28/1A-4-145/41, Sathyamjee Layout, Navalak Gardens, Nellore, Andhra Pradesh – 524002. Under the DPDP Act we are the <strong>data fiduciary</strong> for the personal data described here. Contact us at <a href="mailto:contact-us@baatasari.com">contact-us@baatasari.com</a>; privacy complaints go to our Grievance Officer at <a href="mailto:grievance@baatasari.com">grievance@baatasari.com</a>.</p>
       <p>Baatasari runs three sites (baatasari.com, organizer.baatasari.com and venue.baatasari.com) on one account system, so one account and one set of records may be used across them. This notice covers all of them; it is shown on each with the details that matter for that site.</p>
-      <h2 id="data-we-collect" className="scroll-mt-6">2. Personal data we collect</h2>
+      <h2 id="data-we-collect" className="scroll-mt-[35vh]">2. Personal data we collect</h2>
       <p>We collect only what we need for the purposes in the next section. Specifically:</p>
       <ul>
       <li><strong>Account:</strong> name, email, password (kept only as a secure hash), and, if you use Google sign-in, the name, email and profile identifier Google shares.</li>
@@ -57,7 +57,7 @@ export default function Page() {
       <li><strong>Approximate location:</strong> when you open Events, we work out your city (not your exact position) from your internet connection, to show events near you. It is used only for that, is not stored, and you can switch to all events or pick another city at any time.</li>
       <li><strong>Technical:</strong> sign-in cookies, your IP address and device and browser details in our server logs, and de-duplicated page-view counts for event pages.</li>
       </ul>
-      <h2 id="how-we-use" className="scroll-mt-6">3. Why we use it</h2>
+      <h2 id="how-we-use" className="scroll-mt-[35vh]">3. Why we use it</h2>
       <ul>
       <li>Create and secure your account and sign you in.</li>
       <li>Process bookings and payments, issue tickets and tax invoices, run entry check-in, and process refunds.</li>
@@ -69,10 +69,10 @@ export default function Page() {
       <li>Detect and prevent fraud and abuse, and keep the Platform secure.</li>
       <li>Meet legal duties, including tax, accounting and record-keeping.</li>
       </ul>
-      <h2 id="consent" className="scroll-mt-6">4. Consent and other lawful grounds</h2>
+      <h2 id="consent" className="scroll-mt-[35vh]">4. Consent and other lawful grounds</h2>
       <p>We process your data on the basis of your <strong>consent</strong>, given when you sign up (we record the time and the version of the terms you accepted) and when you take actions such as booking or submitting a form, and for the limited uses the DPDP Act allows without consent, such as meeting a legal duty or responding to a medical or safety emergency. Your consent is for the purposes listed above only.</p>
       <p><strong>You can withdraw consent at any time</strong>, as easily as you gave it: delete your account (see <em>Your rights</em>). Withdrawing does not affect what we did before, and does not remove records we must keep by law. If you withdraw consent for something we need to provide the service, we may no longer be able to provide it.</p>
-      <h2 id="sharing" className="scroll-mt-6">5. Who we share data with</h2>
+      <h2 id="sharing" className="scroll-mt-[35vh]">5. Who we share data with</h2>
       <p><strong>We do not sell your personal data.</strong> We share it only like this:</p>
       <ul>
       <li><strong>Organizers:</strong> when you book, the details needed to run the event (attendee name, contact details, ticket details and check-in status) go to that event’s Organizer. The Organizer becomes an independent data fiduciary for that data, may use it only to run that event, and may not sell it or use it for unrelated marketing.</li>
@@ -80,20 +80,20 @@ export default function Page() {
       <li><strong>Payment gateway (Cashfree):</strong> to take payments and make refunds. You give your payment details directly to them.</li>
       <li><strong>Service providers who process data for us:</strong> Hetzner (our servers and database), Cloudflare (website delivery, security, analytics and storage of uploaded images and documents) and our own mail server (email). They act on our instructions under their service terms and must keep the data secure.</li>
       <li><strong>Microsoft (Clarity):</strong> on most pages of baatasari.com, Microsoft Clarity records how pages are used, such as clicks, scrolling and page flow, so we can improve the design. It is not used on checkout, your profile, or the password-reset and sign-in return pages, and text you type, other text on the page and your ticket QR codes are hidden from the recording. See section 7.</li>
-      <li><strong>OpenStreetMap:</strong> on an event page, the small map of the venue is loaded from OpenStreetMap. Your browser contacts OpenStreetMap to fetch it, so it receives your IP address and the map area shown. We send nothing else about you to it.</li>
+      <li><strong>Google (Maps):</strong> on an event page, the small map of the venue is loaded from Google Maps. Your browser contacts Google to fetch it, so Google receives your IP address and may set its own cookies, under Google’s privacy policy. We send nothing else about you to it.</li>
       <li><strong>Google:</strong> if you choose “Sign in with Google”, sign-in is handled by Google under its own privacy policy.</li>
       <li><strong>Authorities:</strong> where the law, a court order or a lawful request requires, or to protect the rights and safety of users or the public.</li>
       </ul>
-      <h2 id="outside-india" className="scroll-mt-6">6. Where your data is kept and transfers outside India</h2>
+      <h2 id="outside-india" className="scroll-mt-[35vh]">6. Where your data is kept and transfers outside India</h2>
       <p>Our database and application servers are hosted with Hetzner in <strong>Germany</strong>. Website delivery runs on Cloudflare’s global network, so pages and files may pass through or be cached at locations around the world. Uploaded images and documents are stored with Cloudflare (R2 storage), in data centres that may be outside India. Usage recordings from Microsoft Clarity (section 7) are processed by Microsoft, also possibly outside India. The DPDP Act allows transfer of personal data outside India except to countries the Central Government restricts; we will not transfer data to any country it restricts, and we will follow any further rule it makes.</p>
-      <h2 id="cookies" className="scroll-mt-6">7. Cookies and analytics</h2>
+      <h2 id="cookies" className="scroll-mt-[35vh]">7. Cookies and analytics</h2>
       <ul>
       <li><strong>Essential cookies:</strong> secure, httpOnly cookies keep you signed in. The site cannot work without them, and we do not use them for advertising.</li>
       <li><strong>Analytics:</strong> we measure page performance and overall usage through our hosting provider, and count event-page views once per visitor per day.</li>
       <li><strong>Usage recordings (Microsoft Clarity):</strong> on most pages (not checkout, your profile, or the password-reset and sign-in return pages), Clarity sets its own cookies and records your visit as an anonymous session: where you click, how far you scroll, how you move between pages, and your device, browser and approximate location. Text you type and other text on the page is hidden, as are ticket QR codes. We use this only so our founder and design team can see where the site is confusing and fix it; we do not use it to identify you, and it never runs on checkout, your profile, password reset or the sign-in return pages. Microsoft processes it for us under its own terms and privacy statement. You can stop it by blocking cookies or scripts from clarity.ms in your browser, or with a tracker-blocking extension, and the site works the same.</li>
       <li><strong>Advertising:</strong> we do not run advertising trackers.</li>
       </ul>
-      <h2 id="retention" className="scroll-mt-6">8. How long we keep data</h2>
+      <h2 id="retention" className="scroll-mt-[35vh]">8. How long we keep data</h2>
       <ul>
       <li><strong>Account and profile:</strong> while your account exists. When you delete it, it is removed after a 24-hour grace period.</li>
       <li><strong>Orders, invoices, credit notes, tax and payout records:</strong> we must keep these for the period tax and accounting law requires (at least six years), even after you delete your account. Where possible we keep them without your profile details.</li>
@@ -102,10 +102,10 @@ export default function Page() {
       <li><strong>Support tickets and complaints:</strong> three years after they are closed.</li>
       <li><strong>Backups:</strong> database backups are kept for a limited period (currently up to 60 days). Data deleted from our live systems leaves the backups when they expire.</li>
       </ul>
-      <h2 id="security" className="scroll-mt-6">9. How we protect it</h2>
+      <h2 id="security" className="scroll-mt-[35vh]">9. How we protect it</h2>
       <p>We use reasonable safeguards for the data we hold: passwords are stored hashed; sessions use short-lived signed tokens in httpOnly cookies; tickets carry signed QR codes; traffic is encrypted in transit (HTTPS); our database is not reachable from the internet; uploaded identity and agreement documents are stored privately; access to production systems is limited to authorised people and our administrators use two-step verification; keys and passwords are rotated; we keep backups only for a limited time; and we keep logs so that misuse can be detected and investigated. No system is perfectly secure.</p>
       <p><strong>If there is a personal data breach</strong>, we will tell each affected person without delay, in plain language, what happened, what it may mean for you, what we are doing, and what you can do. We will also report it to the Data Protection Board of India as the DPDP Rules require, including a detailed report within 72 hours.</p>
-      <h2 id="rights" className="scroll-mt-6">10. Your rights and how to use them</h2>
+      <h2 id="rights" className="scroll-mt-[35vh]">10. Your rights and how to use them</h2>
       <p>Under the DPDP Act you have the right to:</p>
       <ul>
       <li><strong>Access:</strong> get a summary of the personal data we hold about you, what we do with it, and who we have shared it with.</li>
@@ -115,11 +115,11 @@ export default function Page() {
       <li><strong>Nomination:</strong> name someone to exercise these rights for you if you die or cannot act. Write to <a href="mailto:grievance@baatasari.com">grievance@baatasari.com</a> to record a nomination.</li>
       </ul>
       <p>You can see and edit your details under <a href="/profile">Profile</a>. You can delete your account under <strong>Profile → Security → Delete account</strong>, confirmed with a one-time code. For anything else, email <a href="mailto:grievance@baatasari.com">grievance@baatasari.com</a> from the email address on your account (we need it, or your phone number, to be sure it is you) and say what you want. We acknowledge within 24 hours and complete rights requests within 30 days.</p><p><strong>Guest bookings:</strong> if you booked without an account, email us from the address you booked with and quote the order number; we can then give you access to, or delete, that data (apart from records we must keep).</p>
-      <h2 id="children" className="scroll-mt-6">11. Children</h2>
+      <h2 id="children" className="scroll-mt-[35vh]">11. Children</h2>
       <p>The Platform is for people aged <strong>18 and over</strong>. We do not knowingly collect children’s personal data and we do not offer accounts to anyone under 18. If you believe a child has given us data, tell the Grievance Officer and we will delete it.</p>
-      <h2 id="complaints" className="scroll-mt-6">12. Complaints and the Data Protection Board</h2>
+      <h2 id="complaints" className="scroll-mt-[35vh]">12. Complaints and the Data Protection Board</h2>
       <p>Please first raise any complaint about your personal data with our Grievance Officer at <a href="mailto:grievance@baatasari.com">grievance@baatasari.com</a>. We acknowledge within 24 hours and aim to resolve it within 7 days, and in any case within the 90 days the DPDP Rules allow at most. If you are not satisfied, you may complain to the Data Protection Board of India under the DPDP Act once it is receiving complaints. More on our <a href="/grievance">Grievance Redressal</a> page.</p>
-      <h2 id="changes" className="scroll-mt-6">13. Changes to this notice</h2>
+      <h2 id="changes" className="scroll-mt-[35vh]">13. Changes to this notice</h2>
       <p>We will update this notice when our practices change. The effective date above shows the latest version, and we tell you about material changes on the Platform and by email.</p>
     </LegalPage>
   )

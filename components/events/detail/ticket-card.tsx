@@ -10,9 +10,14 @@ type Tier = EventDetail["ticketTiers"][number]
 
 export const MAX_TICKETS_PER_ORDER = 10
 
-/** Seats left on a tier, when the API tells us how many were sold (null = unknown). */
+// An unlimited ticket type is stored with a huge capacity (999999). It has no
+// "seats left" to show.
+const UNLIMITED_FROM = 100000
+
+/** Seats left on a tier; null when it is unlimited or we do not know. */
 export const tierLeft = (tier: Tier): number | null => {
   if (typeof tier.soldCount !== "number" || typeof tier.quantity !== "number") return null
+  if (tier.quantity >= UNLIMITED_FROM) return null
   return Math.max(0, tier.quantity - tier.soldCount)
 }
 
@@ -34,6 +39,7 @@ export function TicketCard({
   refundable,
   state,
   onBook,
+  onViewRefund,
   calendarEvent,
 }: {
   tiers: Tier[]
@@ -48,6 +54,8 @@ export function TicketCard({
   /** "open" when it can be booked; otherwise why not. */
   state: "open" | "cancelled" | "ended" | "no-tickets" | "sold-out"
   onBook: () => void
+  /** Opens the refund rules row further down the page. */
+  onViewRefund: () => void
   calendarEvent: CalendarEvent
 }) {
   if (state === "cancelled" || state === "ended") {
@@ -165,15 +173,16 @@ export function TicketCard({
           </button>
 
           {typeof refundable === "boolean" && !isFree ? (
-            <a
-              href="#refund"
-              className="mt-3 flex items-center gap-2 rounded-xl bg-(--gold-bar-bg) px-3 py-2 text-xs text-(--gray-600) hover:text-(--brand-navy)"
+            <button
+              type="button"
+              onClick={onViewRefund}
+              className="mt-3 flex w-full items-center gap-2 rounded-xl bg-(--gold-bar-bg) px-3 py-2 text-left text-xs text-(--gray-600) hover:text-(--brand-navy)"
             >
               <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-(--gold-icon)" aria-hidden />
               <span>
                 {refundable ? "Cancellation charges apply" : "Non-refundable"} · <span className="underline">View refund policy</span>
               </span>
-            </a>
+            </button>
           ) : null}
 
           <div className="mt-4 flex items-center justify-between text-xs text-(--gray-500)">

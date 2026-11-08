@@ -73,7 +73,7 @@ export function buildEventFaqs(event: EventDetail): EventFaq[] {
   // Getting in and getting there
   faqs.push({
     q: "How do I get my ticket and what do I show at the gate?",
-    a: "Your ticket, with a QR code, is ready as soon as you pay. Find it under My tickets and show the code at the gate. Keep it private: the first valid scan is admitted.",
+    a: "Your ticket, with a QR code, is ready as soon as you pay. Find it under [My tickets](/history) and show the code at the gate. Keep it private: the first valid scan is admitted.",
   })
 
   const transport = Object.entries(asRecord(event.transportOptions))
@@ -91,7 +91,7 @@ export function buildEventFaqs(event: EventDetail): EventFaq[] {
   // Who to ask
   faqs.push({
     q: "Who do I contact if I have a question?",
-    a: "Use Contact organizer for questions about the event itself. For a payment, a ticket or a refund, raise a ticket from Help or write to grievance@baatasari.com.",
+    a: "Use Contact organizer for questions about the event itself. For a payment, a ticket or a refund, raise a ticket from [Help](/help) or write to [grievance@baatasari.com](mailto:grievance@baatasari.com).",
   })
 
   return faqs

@@ -122,7 +122,7 @@ function ReviewsPanel({ eventId }: { eventId?: string }) {
   })
 
   return (
-    <div className="border border-border rounded-2xl p-6 md:p-8 bg-background shadow-sm flex flex-col overflow-hidden flex-1 min-w-70 lg:min-w-95 max-h-[70vh]">
+    <div className="border border-border rounded-2xl p-6 md:p-8 bg-background shadow-sm flex flex-col overflow-hidden flex-1 min-w-0 lg:min-w-80 max-h-[70vh]">
       <div className="mb-4 flex items-center justify-between px-2">
         <h2 className="text-2xl font-bold text-blue-soft">Reviews</h2>
         {data && data.count > 0 ? (
@@ -229,7 +229,7 @@ export function DateReviewsSection({ eventId }: { eventId?: string }) {
     <div className="flex flex-col lg:flex-row gap-6 w-full h-full justify-center items-center lg:items-stretch">
       {/* Calendar Card */}
       <div className="flex flex-col gap-6 w-full lg:w-auto">
-        <div className="border border-border rounded-2xl p-6 md:p-8 bg-background shadow-sm flex flex-col overflow-hidden flex-1 min-w-70 lg:min-w-95">
+        <div className="border border-border rounded-2xl p-6 md:p-8 bg-background shadow-sm flex flex-col overflow-hidden flex-1 min-w-0 lg:min-w-80">
           <h2 className="text-2xl font-bold text-blue-soft mb-6 px-2">Date Change</h2>
           <div className="flex items-center justify-between mb-6 px-2">
             <Button

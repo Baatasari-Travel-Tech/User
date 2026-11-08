@@ -59,10 +59,9 @@ function matchesLocation(event: EventSummary, where: string): boolean {
 }
 
 const TABS: Array<{ key: EventTab; label: string; noun: string; order: string }> = [
-  // On a phone the order is Upcoming, Live now, Past; from a tablet up it is Live now first.
-  { key: "live", label: "Live now", noun: "live", order: "order-2 md:order-1" },
-  { key: "upcoming", label: "Upcoming", noun: "upcoming", order: "order-1 md:order-2" },
-  { key: "past", label: "Past events", noun: "past", order: "order-3" },
+  // Two tabs. "Upcoming" also holds events that are on today or running over several days.
+  { key: "upcoming", label: "Upcoming", noun: "upcoming", order: "" },
+  { key: "past", label: "Past events", noun: "past", order: "" },
 ]
 
 const DATE_OPTIONS = [
@@ -92,7 +91,7 @@ function EventsPageContent() {
   const eventsQuery = useQuery({ queryKey: ["public-events"], queryFn: fetchAllEvents, staleTime: 60_000 })
   const data = eventsQuery.data
 
-  // The tab the visitor picked; until then, Live now (never Past events).
+  // The tab the visitor picked; until then, Upcoming.
   const [chosenTab, setChosenTab] = useState<EventTab | null>(null)
   const [shown, setShown] = useState(FIRST_PAGE)
   const [phoneExpanded, setPhoneExpanded] = useState(false)
@@ -154,7 +153,10 @@ function EventsPageContent() {
 
   const byTab = useMemo(() => {
     const groups: Record<EventTab, EventSummary[]> = { live: [], upcoming: [], past: [] }
-    for (const event of filtered) groups[eventTab(event)].push(event)
+    for (const event of filtered) {
+      const tab = eventTab(event)
+      groups[tab === "live" ? "upcoming" : tab].push(event)
+    }
     // Soonest first; finished events with the most recent on top.
     const start = (e: EventSummary) => getEventPhase(e).sort
     groups.live.sort((a, b) => start(a) - start(b))
@@ -163,7 +165,7 @@ function EventsPageContent() {
     return groups
   }, [filtered])
 
-  const tab: EventTab = chosenTab ?? "live"
+  const tab: EventTab = chosenTab ?? "upcoming"
 
   const choose = (next: EventTab) => {
     setChosenTab(next)
@@ -230,7 +232,7 @@ function EventsPageContent() {
 
             {/* Tabs + filters */}
             <div className="mt-6 flex flex-col gap-3 border-b border-(--gray-200) md:flex-row md:items-end md:justify-between md:gap-4">
-              <div role="tablist" aria-label="Which events" className="flex gap-6">
+              <div role="tablist" aria-label="Which events" className="flex gap-7">
                 {TABS.map((t) => {
                   const active = tab === t.key
                   return (
@@ -325,7 +327,7 @@ function EventsPageContent() {
               ) : (
                 <section className="flex flex-col items-center justify-center rounded-3xl border border-(--gray-200) bg-white/60 px-6 py-20 text-center">
                   <h2 className="text-xl font-semibold text-(--brand-navy)">
-                    {tab === "past" ? "No past events to show" : tab === "live" ? "Nothing is on right now" : "No upcoming events yet"}
+                    {tab === "past" ? "No past events to show" : "No upcoming events yet"}
                   </h2>
                   <p className="mt-2 max-w-sm text-sm text-(--gray-500)">
                     Try a different tab or filter, or check back soon: new events go live all the time.

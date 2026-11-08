@@ -8,6 +8,33 @@ import type { EventDetail } from "@/types/api"
 
 type RowKey = "refund" | "rules" | "faq"
 
+// FAQ answers may carry links written as [text](/path): My tickets, Help, an email.
+function richText(text: string): ReactNode[] {
+  const parts: ReactNode[] = []
+  const pattern = /\[([^\]]+)\]\(([^)]+)\)/g
+  let last = 0
+  let match: RegExpExecArray | null
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > last) parts.push(text.slice(last, match.index))
+    const [, label, href] = match
+    const cls = "font-semibold text-(--brand-navy) underline underline-offset-2"
+    parts.push(
+      href.startsWith("mailto:") ? (
+        <a key={match.index} href={href} className={cls}>
+          {label}
+        </a>
+      ) : (
+        <Link key={match.index} href={href} className={cls}>
+          {label}
+        </Link>
+      ),
+    )
+    last = match.index + match[0].length
+  }
+  if (last < text.length) parts.push(text.slice(last))
+  return parts
+}
+
 function Row({
   id,
   icon,
@@ -45,19 +72,30 @@ function Row({
  * rules and guidelines, and the questions people ask, answered from what this
  * event says. "View refund policy" in the ticket card opens the first row.
  */
-export function InfoAccordion({ event, guidelines }: { event: EventDetail; guidelines: string[] }) {
-  const [open, setOpen] = useState<Record<RowKey, boolean>>({ refund: false, rules: false, faq: false })
-  const toggle = (key: RowKey) => setOpen((prev) => ({ ...prev, [key]: !prev[key] }))
+export function InfoAccordion({
+  event,
+  guidelines,
+  refundOpen,
+  onRefundOpenChange,
+}: {
+  event: EventDetail
+  guidelines: string[]
+  /** The refund row is controlled by the page so the ticket card can open it. */
+  refundOpen: boolean
+  onRefundOpenChange: (open: boolean) => void
+}) {
+  const [open, setOpen] = useState<Record<Exclude<RowKey, "refund">, boolean>>({ rules: false, faq: false })
+  const toggle = (key: Exclude<RowKey, "refund">) => setOpen((prev) => ({ ...prev, [key]: !prev[key] }))
 
   // The link in the ticket card is #refund: open that row when it is followed.
   useEffect(() => {
     const openFromHash = () => {
-      if (window.location.hash === "#refund") setOpen((prev) => ({ ...prev, refund: true }))
+      if (window.location.hash === "#refund") onRefundOpenChange(true)
     }
     openFromHash()
     window.addEventListener("hashchange", openFromHash)
     return () => window.removeEventListener("hashchange", openFromHash)
-  }, [])
+  }, [onRefundOpenChange])
 
   const policy = event.refundPolicy
   const cutoff = policy?.cutoffHours ?? 2
@@ -70,8 +108,8 @@ export function InfoAccordion({ event, guidelines }: { event: EventDetail; guide
         id="refund"
         icon={<ShieldCheck className="h-5 w-5" aria-hidden />}
         title="Refund & cancellation"
-        open={open.refund}
-        onToggle={() => toggle("refund")}
+        open={refundOpen}
+        onToggle={() => onRefundOpenChange(!refundOpen)}
       >
         {event.refundable === false ? (
           <p>
@@ -144,7 +182,7 @@ export function InfoAccordion({ event, guidelines }: { event: EventDetail; guide
           {faqs.map((faq) => (
             <div key={faq.q}>
               <dt className="font-semibold text-(--brand-navy)">{faq.q}</dt>
-              <dd className="mt-1">{faq.a}</dd>
+              <dd className="mt-1">{richText(faq.a)}</dd>
             </div>
           ))}
         </dl>

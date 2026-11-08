@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 async function fetchEvent(id: string): Promise<EventDetail | null> {
   try {
     const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? ""
-    const res = await fetch(`${base}/api/v1/events/${id}`, {
-      next: { revalidate: 30 },
-    })
+    // Always fresh: the organizer's edits replace ticket types (new ids), and a
+    // cached copy sent buyers to the server with an id that no longer exists.
+    const res = await fetch(`${base}/api/v1/events/${id}`, { cache: "no-store" })
     if (!res.ok) return null
     const json = (await res.json()) as { data?: { event?: EventDetail } }
     return json.data?.event ?? null

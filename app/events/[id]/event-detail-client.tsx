@@ -72,6 +72,7 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
 
   const [coverImageSrc, setCoverImageSrc] = useState(getEventCoverImageUrl(event.id, event.updatedAt))
   const [aboutExpanded, setAboutExpanded] = useState(false)
+  const [refundOpen, setRefundOpen] = useState(false)
 
   // Record a unique daily view of this event page (fire-and-forget).
   useEffect(() => {
@@ -232,6 +233,12 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
     router.push(target)
   }
 
+  // "View refund policy" under Book tickets: open the refund row and bring it to the middle of the screen.
+  const viewRefund = () => {
+    setRefundOpen(true)
+    window.setTimeout(() => document.getElementById("refund")?.scrollIntoView({ behavior: "smooth", block: "center" }), 60)
+  }
+
   // The bar at the bottom of a phone: with nothing chosen it takes you to the ticket card.
   const handleBarBook = () => {
     if (totalQty === 0) {
@@ -383,6 +390,7 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
               refundable={event.refundable}
               state={ticketState}
               onBook={goToCheckout}
+              onViewRefund={viewRefund}
               calendarEvent={calendarEvent}
             />
           </div>
@@ -424,11 +432,7 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
                         {artist.photoUrl ? (
                           <Image src={artist.photoUrl} alt="" fill sizes="48px" unoptimized className="object-cover" />
                         ) : (
-                          artist.name
-                            .split(/\s+/)
-                            .slice(0, 2)
-                            .map((w) => w.charAt(0).toUpperCase())
-                            .join("")
+                          artist.name.trim().charAt(0).toUpperCase()
                         )}
                       </span>
                       <span className="min-w-0">
@@ -509,7 +513,7 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
             <OrganizerCard event={event} />
           </div>
           <div className="lg:col-start-1">
-            <InfoAccordion event={event} guidelines={guidelineItems} />
+            <InfoAccordion event={event} guidelines={guidelineItems} refundOpen={refundOpen} onRefundOpenChange={setRefundOpen} />
           </div>
 
           {/* Flexible dates */}
@@ -539,7 +543,7 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
                   <VisuallyHidden>
                     <DialogTitle>Select Date and View Reviews</DialogTitle>
                   </VisuallyHidden>
-                  <div className="flex h-full w-full items-center justify-center overflow-y-auto p-6 md:p-8">
+                  <div className="h-full w-full overflow-auto p-4 md:p-8">
                     <DateReviewsSection eventId={event.id} />
                   </div>
                 </DialogContent>
