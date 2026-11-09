@@ -32,6 +32,8 @@ import { StateDistrictLocalityPicker } from "@/components/common/state-district-
 import { useAuth } from "@/app/providers"
 import { apiRequest } from "@/lib/api/client"
 import { uploadUserAvatarImage } from "@/lib/api/uploads"
+import { compressImage } from "@/lib/image-compress"
+import { CityChips } from "@/components/talent/city-chips"
 import { loadCashfree } from "@/lib/payments/cashfree"
 import {
   getDobDateBounds,
@@ -41,7 +43,6 @@ import {
   PROFESSION_OPTIONS,
 } from "@/lib/profile-validation"
 import {
-  CITY_SUGGESTIONS,
   MAIN_SKILLS,
   TALENT_FEE,
   VIDEO_LINK_PATTERN,
@@ -49,7 +50,7 @@ import {
   normalizeUrl,
   splitPortfolioLinks,
 } from "@/lib/talent"
-import type { TalentProfile } from "@/types/api"
+import { ApiError, type TalentProfile } from "@/types/api"
 
 /**
  * Talent sign-up — and, once paid, "Edit your talent profile".
@@ -149,8 +150,9 @@ const WHAT_YOU_GET = [
   "Organizers reach you directly — no middlemen",
 ] as const
 
-const PHOTO_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"]
-const MAX_PHOTO_BYTES = 8 * 1024 * 1024
+// Any image file works: it is shrunk in the browser before it is uploaded, so the
+// size limit is only about what the browser can open.
+const MAX_PHOTO_BYTES = 30 * 1024 * 1024
 
 const inputClass =
   "mt-2 w-full rounded-xl border border-(--gold-bar-border) bg-(--gold-bar-bg)/30 px-4 py-3 font-albert text-sm text-(--brand-navy) outline-none transition placeholder:text-(--gray-400) focus:border-(--brand-navy) focus:bg-white focus:ring-4 focus:ring-(--brand-navy)/10"
@@ -322,6 +324,13 @@ function TalentOnboardingForm() {
   const photoInputRef = useRef<HTMLInputElement>(null)
 
   const paid = talentProfile?.paymentStatus === "PAID"
+
+  // Read the saved talent profile fresh when the page opens, so a fee an admin
+  // waived (or a payment that landed) while this page was away is seen.
+  useEffect(() => {
+    void refreshRoles()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const accountDone = profile?.global_onboarding_completed === true
 
   // The account location (state / district / locality picker) lives outside
@@ -362,6 +371,7 @@ function TalentOnboardingForm() {
   const bio = useWatch({ control: form.control, name: "bio" }) ?? ""
   const slots = (useWatch({ control: form.control, name: "preferredSlots" }) ?? "").split(",").map((s) => s.trim()).filter(Boolean)
   const expectedPriceBand = useWatch({ control: form.control, name: "expectedPriceBand" })
+  const cities = useWatch({ control: form.control, name: "city" }) ?? ""
   const work = (useWatch({ control: form.control, name: "availableFor" }) ?? "").split(",").map((s) => s.trim()).filter(Boolean)
   const profession = useWatch({ control: form.control, name: "profession" })
 
@@ -376,33 +386,33 @@ function TalentOnboardingForm() {
   const onPhotoPicked = async (file: File | null) => {
     setPhotoError(null)
     if (!file) return
-    if (!PHOTO_TYPES.includes(file.type)) {
-      setPhotoError("Use a PNG, JPG or WEBP photo.")
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("Choose an image file (JPG, PNG or WEBP).")
       return
     }
     if (file.size > MAX_PHOTO_BYTES) {
-      setPhotoError("Photo must be 8MB or less.")
+      setPhotoError("That file is over 30 MB. Pick a smaller photo.")
       return
     }
     setPhotoBusy(true)
     try {
+      // Shrink first: a phone photo is several MB, and the upload was the slow part.
+      const small = await compressImage(file, 1600, 0.85)
       const res = await apiRequest<{ data: { profile: TalentProfile } }>("/talent/photo", {
         method: "PUT",
         auth: true,
-        headers: { "Content-Type": file.type },
-        body: file,
+        headers: { "Content-Type": small.type },
+        body: small,
         timeoutMs: 60000,
       })
       setPhotoUrl(res.data.profile.photoUrl)
       // An account with no picture of its own (nothing set, no Google picture)
-      // gets this photo as its picture too, so the navbar shows them. Best
-      // effort: the performer's photo is already saved either way.
+      // gets this photo as its picture too, so the navbar shows them. In the
+      // background and best effort: the performer's photo is saved either way.
       if (!profile?.avatar_url) {
-        try {
-          await uploadUserAvatarImage(file)
-        } catch {
-          /* the talent photo is what matters here */
-        }
+        void compressImage(file, 512, 0.85)
+          .then((avatar) => uploadUserAvatarImage(avatar))
+          .catch(() => undefined)
       }
     } catch (err) {
       setPhotoError(err instanceof Error ? err.message : "Could not upload the photo. Try again.")
@@ -493,10 +503,21 @@ function TalentOnboardingForm() {
 
       // 3. Pay ₹299. An earlier payment that never got confirmed is picked
       //    up instead of charging again.
-      const orderResponse = await apiRequest<{ data: { order: TalentOrderResponse } }>(
-        "/talent/onboarding/order",
-        { method: "POST", auth: true },
-      )
+      let orderResponse: { data: { order: TalentOrderResponse } }
+      try {
+        orderResponse = await apiRequest<{ data: { order: TalentOrderResponse } }>("/talent/onboarding/order", {
+          method: "POST",
+          auth: true,
+        })
+      } catch (orderError) {
+        // The profile is already live (the fee was waived, or paid in another
+        // tab): nothing to pay, go to the dashboard.
+        if (orderError instanceof ApiError && orderError.code === "ALREADY_ONBOARDED") {
+          await goToDashboard("Your talent profile is already live.")
+          return
+        }
+        throw orderError
+      }
       const order = orderResponse.data.order
       if (order.alreadyPaid) {
         await goToDashboard("Payment received — your talent profile is live.")
@@ -806,13 +827,13 @@ function TalentOnboardingForm() {
                     >
                       {photoUrl ? "Change photo" : "Upload photo"}
                     </button>
-                    <p className="mt-2 font-albert text-xs text-(--gray-500)">PNG, JPG or WEBP, up to 8MB.</p>
+                    <p className="mt-2 font-albert text-xs text-(--gray-500)">Any photo works (JPG, PNG or WEBP). We make it smaller for you.</p>
                     <FieldError message={photoError ?? undefined} />
                   </div>
                   <input
                     ref={photoInputRef}
                     type="file"
-                    accept={PHOTO_TYPES.join(",")}
+                    accept="image/*"
                     className="hidden"
                     onChange={(e) => onPhotoPicked(e.target.files?.[0] ?? null)}
                   />
@@ -931,32 +952,28 @@ function TalentOnboardingForm() {
                         <input
                           inputMode="numeric"
                           className={`${inputClass} mt-0 pl-8`}
-                          placeholder="Enter starting price"
-                          value={expectedPriceBand}
+                          placeholder="e.g. 5,000"
+                          value={expectedPriceBand ? Number(expectedPriceBand).toLocaleString("en-IN") : ""}
                           onChange={(e) =>
-                            form.setValue("expectedPriceBand", e.target.value.replace(/\D/g, ""), {
+                            form.setValue("expectedPriceBand", e.target.value.replace(/\D/g, "").slice(0, 9), {
                               shouldValidate: true,
                               shouldDirty: true,
                             })
                           }
                         />
                       </div>
-                      <p className="mt-1.5 font-albert text-xs text-(--gray-500)">Prices can be discussed later.</p>
+                      <p className="mt-1.5 font-albert text-xs text-(--gray-500)">Your starting price for one booking. Prices can be discussed later.</p>
                       <FieldError message={errors.expectedPriceBand?.message} />
                     </div>
                     <div>
-                      <FieldLabel icon={MapPin}>City you perform in</FieldLabel>
-                      <input
-                        className={inputClass}
-                        list="talent-city-suggestions"
-                        placeholder="Start typing your city"
-                        {...form.register("city")}
-                      />
-                      <datalist id="talent-city-suggestions">
-                        {CITY_SUGGESTIONS.map((c) => (
-                          <option key={c} value={c} />
-                        ))}
-                      </datalist>
+                      <FieldLabel icon={MapPin}>Cities you perform in</FieldLabel>
+                      <div className="mt-2">
+                        <CityChips
+                          value={cities}
+                          inputClass={inputClass}
+                          onChange={(next) => form.setValue("city", next, { shouldValidate: true, shouldDirty: true })}
+                        />
+                      </div>
                       <FieldError message={errors.city?.message} />
                     </div>
                   </div>

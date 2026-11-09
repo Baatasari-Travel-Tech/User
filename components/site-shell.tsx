@@ -227,6 +227,7 @@ function AuthQueryParamSync() {
   const router = useRouter()
   const pathname = usePathname()
   const { open, openModal } = useAuthModal()
+  const { session } = useAuth()
   const maintenance = useMaintenance()
 
   useEffect(() => {
@@ -255,6 +256,11 @@ function AuthQueryParamSync() {
     authModalWasOpenRef.current = false
     const auth = searchParams.get('auth')
     if (!auth) return
+    // Just signed in, and the form has already started taking the visitor to the
+    // page in ?redirect (for example /talent -> /talent/onboarding): rewriting
+    // the address here would send them straight back to this page.
+    const redirect = searchParams.get('redirect')
+    if (session?.user && redirect && redirect.startsWith('/') && redirect.split('?')[0] !== pathname) return
     const params = new URLSearchParams(searchParams.toString())
     params.delete('auth')
     params.delete('role')
@@ -262,7 +268,7 @@ function AuthQueryParamSync() {
     params.delete('authErrorDescription')
     params.delete('totpPending')
     router.replace(params.size ? `${pathname}?${params}` : pathname)
-  }, [open, searchParams, pathname, router])
+  }, [open, searchParams, pathname, router, session?.user])
 
   return null
 }
