@@ -38,8 +38,8 @@ export default function Page() {
   return (
     <LegalPage
       title="Terms & Conditions"
-      standfirst="Effective 22 October 2026. These Terms are a legally binding agreement between you and Baatasari. Please read them before you book."
-      updated="22 October 2026"
+      standfirst="Effective 10 November 2026. These Terms are a legally binding agreement between you and Baatasari. Please read them before you book."
+      updated="10 November 2026"
     >
       <nav aria-label="Contents">
         <p>
@@ -61,7 +61,7 @@ export default function Page() {
       <li><strong>“Attendee”</strong>: a person who browses the Platform or books tickets to an Event.</li>
       <li><strong>“Organizer”</strong>: a person or business that has registered, been approved, and lists Events on the Platform.</li>
       <li><strong>“Venue Partner”</strong>: a person or business that lists a venue on the Platform.</li>
-      <li><strong>“Talent”</strong>: a performer or artist who registers a profile in the Platform’s talent directory.</li>
+      <li><strong>“Talent”</strong>: a performer or artist who registers a profile that approved Organizers can find in the Platform’s “Find talent” tool.</li>
       <li><strong>“Event”</strong>: any event, workshop, performance, meetup or experience listed on the Platform by an Organizer.</li>
       <li><strong>“Ticket”</strong>: the digital admission, including its QR code, issued on a confirmed booking.</li>
       </ul>
@@ -111,7 +111,7 @@ export default function Page() {
       <ul>
       <li>To list a talent profile you submit your details and pay a one-time registration fee, currently <strong>₹299</strong>. We issue a GST invoice for it. We may waive the fee for a profile at our discretion; a waived profile is treated as paid.</li>
       <li>The profile goes live after payment (or waiver) and stays live until you or we hide or remove it. We can hide or remove a profile that breaches these Terms.</li>
-      <li><strong>Who sees your contact details.</strong> Your public profile shows your name, photo, city, category and videos. Your phone, WhatsApp and email are shown <strong>only to Organizers we have approved</strong>, through the “Find talent” tool, so that they can offer you work. By registering you consent to this.</li>
+      <li><strong>Who sees your profile.</strong> Your talent profile is <strong>private</strong>: only you and <strong>Organizers we have approved</strong> can see it, through the “Find talent” tool, so that they can offer you work. Approved Organizers see your name, photo, city, category and videos, and also your phone, WhatsApp and email. Other users and the public cannot see your profile. If an Organizer picks you as an artist for an event, that event’s page shows your name and photo. By registering you consent to this.</li>
       <li>A talent profile is a listing service. We do not guarantee any booking or income, and we are not a party to any arrangement between you and an Organizer or anyone else.</li>
       <li>The registration fee is not refundable once the profile is live, except as the <a href="/refund-policy">Refund Policy</a> says.</li>
       </ul>

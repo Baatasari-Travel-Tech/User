@@ -215,6 +215,9 @@ export function IdentitySection() {
               hint="Pick your state, district, then area."
             >
               <StateDistrictLocalityPicker
+                // The picker reads its starting values once, when it first appears, and the
+                // saved address arrives a moment later: show it again when it does.
+                key={values.location ? "saved" : "empty"}
                 initialState={values.locationState ?? ""}
                 initialDistrict={values.locationCity ?? ""}
                 initialLocalityLabel={values.location ?? ""}

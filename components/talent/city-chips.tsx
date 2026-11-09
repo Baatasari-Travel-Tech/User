@@ -1,8 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Plus, X } from "lucide-react"
-import { CITY_SUGGESTIONS } from "@/lib/talent"
+import { X } from "lucide-react"
+import { LocationAutocomplete } from "@/components/common/location-autocomplete"
 
 /** The cities a performer works in are stored in one text field, joined like this. */
 export const CITY_SEPARATOR = " · "
@@ -16,30 +15,17 @@ export const splitCities = (value: string | null | undefined): string[] =>
 export const joinCities = (cities: string[]): string => cities.join(CITY_SEPARATOR)
 
 /**
- * "Cities you perform in": add as many as you work in. Each one shows as a chip
- * you can remove. Suggestions help with the common ones; any city can be typed.
+ * "Cities you perform in": start typing a city and pick it from the dropdown
+ * (cities of India, with the state). Each pick becomes a chip you can remove, so
+ * a performer can work in as many cities as they like.
  */
-export function CityChips({
-  value,
-  onChange,
-  inputClass,
-}: {
-  value: string
-  onChange: (next: string) => void
-  inputClass: string
-}) {
+export function CityChips({ value, onChange }: { value: string; onChange: (next: string) => void }) {
   const cities = splitCities(value)
-  const [text, setText] = useState("")
 
-  const add = (raw: string) => {
-    const city = raw.trim()
-    if (city.length < 2) return
-    if (cities.some((c) => c.toLowerCase() === city.toLowerCase())) {
-      setText("")
-      return
-    }
+  const add = (city: string) => {
+    if (!city.trim()) return
+    if (cities.some((c) => c.toLowerCase() === city.toLowerCase())) return
     onChange(joinCities([...cities, city]))
-    setText("")
   }
 
   const remove = (city: string) => onChange(joinCities(cities.filter((c) => c !== city)))
@@ -66,35 +52,12 @@ export function CityChips({
           ))}
         </ul>
       ) : null}
-
-      <div className="flex gap-2">
-        <input
-          className={`${inputClass} min-w-0 flex-1`}
-          list="talent-city-suggestions"
-          placeholder={cities.length > 0 ? "Add another city" : "Start typing your city"}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault()
-              add(text)
-            }
-          }}
-          onBlur={() => add(text)}
-        />
-        <button
-          type="button"
-          onClick={() => add(text)}
-          className="mt-2 inline-flex shrink-0 items-center gap-1.5 rounded-full border border-(--gold-bar-border) px-4 font-poppins text-sm font-semibold text-(--brand-navy) transition hover:border-(--gold)"
-        >
-          <Plus className="h-4 w-4" aria-hidden /> Add
-        </button>
-      </div>
-      <datalist id="talent-city-suggestions">
-        {CITY_SUGGESTIONS.map((c) => (
-          <option key={c} value={c} />
-        ))}
-      </datalist>
+      <LocationAutocomplete
+        variant="city"
+        clearOnSelect
+        placeholder={cities.length > 0 ? "Add another city" : "Type a city and pick it from the list"}
+        onSelect={(r) => add(r.label)}
+      />
     </div>
   )
 }

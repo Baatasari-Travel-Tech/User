@@ -145,8 +145,8 @@ const WORK_TYPES = [
 const EXPERIENCE = ["Less than 1 year", "1–3 years", "3–5 years", "5+ years"] as const
 const LEVELS = ["Beginner", "Intermediate", "Professional", "Expert"] as const
 const WHAT_YOU_GET = [
-  "Your own public profile page",
-  "Listed in the Baatasari talent directory",
+  "Found by approved organizers across Baatasari",
+  "Your profile is private: only you and organizers see it",
   "Organizers reach you directly — no middlemen",
 ] as const
 
@@ -611,7 +611,7 @@ function TalentOnboardingForm() {
               </h1>
               <p className="mt-4 max-w-xs font-albert text-sm leading-6 text-white/60">
                 {paid
-                  ? "Changes show on your public profile as soon as you save."
+                  ? "Organizers see your changes as soon as you save."
                   : "A few details and a one-time fee — then cafés, events and brands can discover and book you."}
               </p>
             </div>
@@ -680,7 +680,7 @@ function TalentOnboardingForm() {
               </h1>
               <p className="mx-auto mt-3 max-w-md font-albert text-sm leading-6 text-(--gray-600)">
                 {paid
-                  ? "Changes show on your public profile as soon as you save."
+                  ? "Organizers see your changes as soon as you save."
                   : "A few details and a one-time fee — then you're discoverable by cafés, events and brands."}
               </p>
             </div>
@@ -970,7 +970,6 @@ function TalentOnboardingForm() {
                       <div className="mt-2">
                         <CityChips
                           value={cities}
-                          inputClass={inputClass}
                           onChange={(next) => form.setValue("city", next, { shouldValidate: true, shouldDirty: true })}
                         />
                       </div>
@@ -994,7 +993,7 @@ function TalentOnboardingForm() {
                       />
                     </div>
                     <p className="mt-1.5 font-albert text-xs text-(--gray-500)">
-                      Shown only to verified organizers on Baatasari — never on your public page.
+                      Shown only to verified organizers on Baatasari.
                     </p>
                     <FieldError message={errors.contactPhone?.message} />
                   </div>

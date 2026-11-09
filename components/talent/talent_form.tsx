@@ -105,12 +105,6 @@ export function TalentInformationForm() {
               {isTalent ? "Go to your dashboard" : "Register as Talent"}
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Link>
-            <Link
-              href="/talent/browse"
-              className="inline-flex h-14 items-center justify-center rounded-full border border-(--brand-navy)/20 bg-white/70 px-7 font-poppins text-base font-semibold text-(--brand-navy) backdrop-blur-sm transition hover:border-(--brand-navy)/40"
-            >
-              Browse talent
-            </Link>
           </motion.div>
         </motion.div>
       </div>

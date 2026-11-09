@@ -444,18 +444,11 @@ export default function EventDetailClient({ event }: { event: EventDetail }) {
                       </span>
                     </>
                   )
+                  // A performer picked from Baatasari talent shows their photo and name only:
+                  // talent profiles are private to the performer and to organizers.
                   return (
                     <li key={`${artist.name}-${artist.talentSlug ?? ""}`}>
-                      {artist.talentSlug ? (
-                        <Link
-                          href={`/talent/p/${artist.talentSlug}`}
-                          className="flex items-center gap-3 rounded-2xl p-1 transition hover:bg-(--gray-50)"
-                        >
-                          {inner}
-                        </Link>
-                      ) : (
-                        <div className="flex items-center gap-3 p-1">{inner}</div>
-                      )}
+                      <div className="flex items-center gap-3 p-1">{inner}</div>
                     </li>
                   )
                 })}

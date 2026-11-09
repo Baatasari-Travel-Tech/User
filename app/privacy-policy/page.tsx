@@ -27,8 +27,8 @@ export default function Page() {
   return (
     <LegalPage
       title="Privacy Policy"
-      standfirst="Effective 4 November 2026. This notice explains, in plain language, what personal data we collect, why, who gets it, how long we keep it, and what you can do. It follows the Digital Personal Data Protection Act, 2023 (“DPDP Act”) and its Rules, 2025."
-      updated="4 November 2026"
+      standfirst="Effective 10 November 2026. This notice explains, in plain language, what personal data we collect, why, who gets it, how long we keep it, and what you can do. It follows the Digital Personal Data Protection Act, 2023 (“DPDP Act”) and its Rules, 2025."
+      updated="10 November 2026"
     >
       <nav aria-label="Contents">
         <p>
@@ -61,7 +61,7 @@ export default function Page() {
       <ul>
       <li>Create and secure your account and sign you in.</li>
       <li>Process bookings and payments, issue tickets and tax invoices, run entry check-in, and process refunds.</li>
-      <li>Show your talent profile in the directory and, with your consent, share your contact details with approved Organizers.</li>
+      <li>Show your talent profile to approved Organizers, with your contact details, so they can offer you work. Your profile is not shown to other users or the public.</li>
       <li>Send service messages: confirmations, tickets, payment and refund updates, verification codes and security notices.</li>
       <li>Suggest events using your stated location and interests, and your approximate city when you open Events.</li>
       <li>Give Organizers aggregate analytics for their events (for example views against purchases), not your individual browsing.</li>
@@ -76,7 +76,7 @@ export default function Page() {
       <p><strong>We do not sell your personal data.</strong> We share it only like this:</p>
       <ul>
       <li><strong>Organizers:</strong> when you book, the details needed to run the event (attendee name, contact details, ticket details and check-in status) go to that event’s Organizer. The Organizer becomes an independent data fiduciary for that data, may use it only to run that event, and may not sell it or use it for unrelated marketing.</li>
-      <li><strong>Approved Organizers, if you are Talent:</strong> your phone, WhatsApp and email, through our “Find talent” tool, so they can offer you work. Everyone else sees only your public profile.</li>
+      <li><strong>Approved Organizers, if you are Talent:</strong> your profile (name, photo, city, category, videos) and your phone, WhatsApp and email, through our “Find talent” tool, so they can offer you work. Nobody else sees your profile; if an Organizer picks you as an artist for an event, that event page shows your name and photo.</li>
       <li><strong>Payment gateway (Cashfree):</strong> to take payments and make refunds. You give your payment details directly to them.</li>
       <li><strong>Service providers who process data for us:</strong> Hetzner (our servers and database), Cloudflare (website delivery, security, analytics and storage of uploaded images and documents) and our own mail server (email). They act on our instructions under their service terms and must keep the data secure.</li>
       <li><strong>Microsoft (Clarity):</strong> on most pages of baatasari.com, Microsoft Clarity records how pages are used, such as clicks, scrolling and page flow, so we can improve the design. It is not used on checkout, your profile, or the password-reset and sign-in return pages, and text you type, other text on the page and your ticket QR codes are hidden from the recording. See section 7.</li>

@@ -1,14 +1,10 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import { useQuery } from "@tanstack/react-query"
 import {
   AlertTriangle,
-  ArrowUpRight,
   CheckCircle2,
-  Copy,
-  Eye,
   MapPin,
   MessageCircle,
   PenLine,
@@ -56,21 +52,8 @@ export default function TalentDashboardPage() {
 }
 
 function Dashboard({ profile }: { profile: TalentProfile }) {
-  const [copied, setCopied] = useState(false)
-  const publicPath = profile.slug ? `/talent/p/${profile.slug}` : null
-  const publicUrl = publicPath ? `https://baatasari.com${publicPath}` : null
   const price = formatPrice(profile.expectedPriceBand)
 
-  const copy = async () => {
-    if (!publicUrl) return
-    try {
-      await navigator.clipboard.writeText(publicUrl)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      /* clipboard blocked — the link is visible to copy by hand */
-    }
-  }
 
   return (
     <div className="grid gap-5">
@@ -106,15 +89,6 @@ function Dashboard({ profile }: { profile: TalentProfile }) {
             </p>
           </div>
           <div className="flex flex-wrap gap-2.5">
-            {publicPath && profile.isListed ? (
-              <Link
-                href={publicPath}
-                className="inline-flex items-center gap-2 rounded-full bg-(--brand-navy) px-5 py-2.5 font-poppins text-sm font-semibold text-white transition hover:opacity-90"
-              >
-                <Eye className="h-4 w-4" />
-                View public profile
-              </Link>
-            ) : null}
             <Link
               href="/talent/onboarding"
               className="inline-flex items-center gap-2 rounded-full border border-(--gold-bar-border) px-5 py-2.5 font-poppins text-sm font-semibold text-(--brand-navy) transition hover:border-(--gold)"
@@ -133,7 +107,7 @@ function Dashboard({ profile }: { profile: TalentProfile }) {
           <div>
             <h2 className="font-bricolage text-lg font-bold text-rose-800">Your profile is hidden</h2>
             <p className="mt-1 font-albert text-sm text-rose-700">
-              Our team has taken it off the talent directory
+              Our team has hidden it from organizers
               {profile.hiddenReason ? `: ${profile.hiddenReason}` : "."} Fix it with “Edit profile”, then
               write to us and we&apos;ll take another look.
             </p>
@@ -145,23 +119,8 @@ function Dashboard({ profile }: { profile: TalentProfile }) {
           <div className="min-w-0">
             <h2 className="font-bricolage text-lg font-bold text-emerald-900">You&apos;re live</h2>
             <p className="mt-1 font-albert text-sm text-emerald-800">
-              Anyone can find you in the Baatasari talent directory, and verified organizers can contact you.
+              Verified organizers on Baatasari can find you and contact you. Your profile is private: other users cannot see it.
             </p>
-            {publicUrl ? (
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <code className="max-w-full truncate rounded-lg bg-white px-3 py-1.5 font-mono text-xs text-(--brand-navy)">
-                  {publicUrl}
-                </code>
-                <button
-                  type="button"
-                  onClick={copy}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-white px-3 py-1.5 font-poppins text-xs font-semibold text-emerald-800"
-                >
-                  <Copy className="h-3.5 w-3.5" />
-                  {copied ? "Copied" : "Copy link"}
-                </button>
-              </div>
-            ) : null}
           </div>
         </section>
       )}
@@ -175,7 +134,7 @@ function Dashboard({ profile }: { profile: TalentProfile }) {
           <p className="mt-3 font-albert text-sm leading-6 text-(--gray-600)">
             Verified organizers on Baatasari see your number
             {profile.contactPhone ? <strong className="text-(--brand-navy)"> {profile.contactPhone}</strong> : null} and
-            can message you on WhatsApp. It is never shown on your public page.
+            can message you on WhatsApp. It is shown to no one else.
           </p>
           <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-(--gold-soft-bg) px-3 py-1 font-albert text-xs text-(--gold-text)">
             <MessageCircle className="h-3.5 w-3.5" />
@@ -204,13 +163,6 @@ function Dashboard({ profile }: { profile: TalentProfile }) {
               <dd className="font-semibold text-(--brand-navy)">{profile.videoLinks.length}</dd>
             </div>
           </dl>
-          <Link
-            href="/talent/browse"
-            className="mt-4 inline-flex items-center gap-1 font-poppins text-sm font-semibold text-(--brand-navy) underline-offset-4 hover:underline"
-          >
-            See the talent directory
-            <ArrowUpRight className="h-4 w-4" />
-          </Link>
         </section>
       </div>
     </div>

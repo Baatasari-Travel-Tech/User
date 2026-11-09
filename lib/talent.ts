@@ -1,5 +1,6 @@
 // Talent (performers) — shared by the sign-up/edit form, the dashboard, the
-// public directory (/talent/browse) and profile pages (/talent/p/[slug]).
+// directory and profiles, which are private to the performer and to approved
+// organizers (there are no public pages on baatasari.com any more).
 
 export const TALENT_FEE = 299
 

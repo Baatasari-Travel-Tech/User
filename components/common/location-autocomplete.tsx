@@ -12,6 +12,10 @@ interface LocationAutocompleteProps {
   onSelect: (loc: LocationResult) => void
   placeholder?: string
   className?: string
+  /** "city": one entry per city ("City, State") instead of one per area. */
+  variant?: "place" | "city"
+  /** Empty the box after a pick (for a list of chips built one pick at a time). */
+  clearOnSelect?: boolean
 }
 
 // Reusable place picker. Type an area, city or pincode (min 3 chars) → ranked
@@ -25,11 +29,26 @@ interface LocationAutocompleteProps {
 /** Shortest query we'll send to the server. */
 const MIN_QUERY = 3
 
+// Many areas share one city: keep the first of each, labelled "City, State".
+const uniqueCities = (items: LocationResult[]): LocationResult[] => {
+  const seen = new Map<string, LocationResult>()
+  for (const r of items) {
+    const name = (r.city || r.district || r.area || "").trim()
+    if (!name) continue
+    const label = r.state ? `${name}, ${r.state}` : name
+    const key = label.toLowerCase()
+    if (!seen.has(key)) seen.set(key, { ...r, id: key, label })
+  }
+  return [...seen.values()]
+}
+
 export function LocationAutocomplete({
   value,
   onSelect,
   placeholder = "Search area or city",
   className = "",
+  variant = "place",
+  clearOnSelect = false,
 }: LocationAutocompleteProps) {
   const [text, setText] = useState(value ?? "")
   // Results are stored together with the query they belong to, so "is this list
@@ -61,7 +80,8 @@ export function LocationAutocomplete({
   // Derived, not stored: we're searching whenever the loaded list belongs to a
   // different query than the one currently typed.
   const searching = active && data.query !== query
-  const results = data.query === query ? data.items : []
+  const rawResults = data.query === query ? data.items : []
+  const results = variant === "city" ? uniqueCities(rawResults) : rawResults
 
   // Debounced search.
   useEffect(() => {
@@ -128,7 +148,7 @@ export function LocationAutocomplete({
     >
       {/* A busy pincode returns a lot of areas (791122 has 153). Say how many, and
           point at the way out: type the area name after the code to filter. */}
-      {!searching && results.length > 12 ? (
+      {variant === "place" && !searching && results.length > 12 ? (
         <p className="sticky top-0 z-10 border-b border-slate-100 bg-slate-50/95 px-3 py-2 text-[11px] font-medium text-slate-500 backdrop-blur">
           {results.length} areas. Type your area name after the pincode to narrow.
         </p>
@@ -147,7 +167,7 @@ export function LocationAutocomplete({
               aria-selected={r.label === text}
               onClick={() => {
                 onSelect(r)
-                setText(r.label)
+                setText(clearOnSelect ? "" : r.label)
                 setOpen(false)
               }}
               className="block w-full px-3 py-2.5 text-left text-sm leading-snug text-slate-700 hover:bg-slate-50"

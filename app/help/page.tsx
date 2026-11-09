@@ -101,7 +101,7 @@ const SECTIONS: { title: string; faqs: Faq[] }[] = [
     faqs: [
       {
         q: "How do I list myself as a performer?",
-        a: <>From {link("/talent", "Talent")}: create your profile and pay ₹299 once — it&apos;s a lifetime listing. You&apos;re live in the {link("/talent/browse", "talent directory")} straight away and can edit your profile any time.</>,
+        a: <>From {link("/talent", "Talent")}: create your profile and pay ₹299 once — it&apos;s a lifetime listing. Approved organizers can find and book you straight away, and you can edit your profile any time. Your profile is not shown to other users.</>,
       },
       {
         q: "I want to host an event",
