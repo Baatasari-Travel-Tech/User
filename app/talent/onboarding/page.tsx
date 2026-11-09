@@ -31,6 +31,7 @@ import { ProtectedRoute } from "@/components/auth/protected-route"
 import { StateDistrictLocalityPicker } from "@/components/common/state-district-locality-picker"
 import { useAuth } from "@/app/providers"
 import { apiRequest } from "@/lib/api/client"
+import { uploadUserAvatarImage } from "@/lib/api/uploads"
 import { loadCashfree } from "@/lib/payments/cashfree"
 import {
   getDobDateBounds,
@@ -393,6 +394,16 @@ function TalentOnboardingForm() {
         timeoutMs: 60000,
       })
       setPhotoUrl(res.data.profile.photoUrl)
+      // An account with no picture of its own (nothing set, no Google picture)
+      // gets this photo as its picture too, so the navbar shows them. Best
+      // effort: the performer's photo is already saved either way.
+      if (!profile?.avatar_url) {
+        try {
+          await uploadUserAvatarImage(file)
+        } catch {
+          /* the talent photo is what matters here */
+        }
+      }
     } catch (err) {
       setPhotoError(err instanceof Error ? err.message : "Could not upload the photo. Try again.")
     } finally {
